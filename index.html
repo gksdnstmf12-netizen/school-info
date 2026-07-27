@@ -32,7 +32,6 @@
     .animate-fadeIn {
       animation: fadeIn 0.25s ease-out forwards;
     }
-    /* Custom scrollbar for cozy warmth */
     ::-webkit-scrollbar {
       width: 5px;
     }
@@ -92,8 +91,8 @@
         <div>
           <h1 class="font-bold text-lg text-[#5C3A21] leading-tight flex items-center gap-1.5">
             할머니네 집
-            <span id="header-school-badge" class="text-[11px] bg-[#E8B86D] text-[#4A2C11] px-2 py-0.5 rounded-full font-semibold">
-              강남초
+            <span id="header-school-badge" class="text-[11px] bg-[#E8B86D] text-[#4A2C11] px-2 py-0.5 rounded-full font-semibold max-w-[120px] truncate">
+              서울강남초
             </span>
           </h1>
           <p class="text-xs text-[#8C6A50]">오늘도 맛있는 밥 먹고 힘내거라!</p>
@@ -149,11 +148,11 @@
 
         <div class="text-center">
           <h3 class="font-bold text-base text-[#4A3B32]">🏫 내 학교 검색 및 설정</h3>
-          <p class="text-xs text-[#8C6A50] mt-0.5">전국 시도교육청과 학교 이름을 입력하세요</p>
+          <p class="text-xs text-[#8C6A50] mt-0.5">전국 나이스(NEIS) 등록 학교 검색</p>
         </div>
 
         <div class="space-y-1">
-          <label class="text-xs font-bold text-[#6E5A4C]">관할 교육청 선택</label>
+          <label class="text-xs font-bold text-[#6E5A4C]">관할 교육청 선택 (선택 사항)</label>
           <select id="office-select" class="w-full bg-white border border-[#D0B8A0] rounded-xl px-3 py-2 text-xs text-[#4A3B32] focus:outline-none focus:border-[#D87A56]">
             <!-- Education offices populated via JS -->
           </select>
@@ -162,7 +161,7 @@
         <div class="space-y-1">
           <label class="text-xs font-bold text-[#6E5A4C]">학교 이름 검색</label>
           <div class="flex gap-2">
-            <input type="text" id="school-query-input" placeholder="예: 서울초, 한국중, 세종고" class="flex-1 bg-white border border-[#D0B8A0] rounded-xl px-3 py-2 text-xs text-[#4A3B32] focus:outline-none focus:border-[#D87A56]">
+            <input type="text" id="school-query-input" placeholder="예: 강남초, 한국중, 세종고" class="flex-1 bg-white border border-[#D0B8A0] rounded-xl px-3 py-2 text-xs text-[#4A3B32] focus:outline-none focus:border-[#D87A56]">
             <button id="btn-search-school" class="bg-[#D87A56] hover:bg-[#C26946] text-white px-3.5 rounded-xl font-bold text-xs flex items-center justify-center transition-all">
               <i data-lucide="search" class="w-4 h-4"></i>
             </button>
@@ -186,16 +185,17 @@
           <div class="w-10 h-10 bg-[#E8D8C8] text-[#5C3A21] rounded-full flex items-center justify-center mx-auto mb-2">
             <i data-lucide="key" class="w-5 h-5"></i>
           </div>
-          <h3 class="font-bold text-base text-[#4A3B32]">🔑 API 설정 및 배포 안내</h3>
-          <p class="text-xs text-[#8C6A50] mt-0.5">NEIS API 및 할머니 AI Key 설정</p>
+          <h3 class="font-bold text-base text-[#4A3B32]">🔑 API 설정</h3>
+          <p class="text-xs text-[#8C6A50] mt-0.5">NEIS 인증키 및 할머니 AI Key 설정</p>
         </div>
 
         <div class="space-y-3 pt-1">
-          <div class="p-3 bg-[#FAF0E6] rounded-xl border border-[#E8D8C8] text-xs text-[#5C3A21] space-y-1">
-            <p class="font-bold">🛡️ NEIS_API_KEY 프록시 지원</p>
-            <p class="text-[11px] text-[#8C6A50] leading-relaxed">
-              Vercel 대시보드 환경변수 <code class="bg-white px-1 py-0.5 rounded border border-[#D0B8A0] font-mono text-[#D87A56]">NEIS_API_KEY</code> 및 클라이언트 Gemini API Key를 활용합니다.
-            </p>
+          <div class="space-y-1">
+            <label class="text-xs font-bold text-[#6E5A4C] flex items-center justify-between">
+              <span>나이스(NEIS) API KEY</span>
+              <span class="text-[10px] font-normal text-[#8C6A50]">미입력시 기본샘플키 적용</span>
+            </label>
+            <input type="text" id="neis-key-input" placeholder="NEIS API Key (선택 사항)" class="w-full bg-white border border-[#D0B8A0] rounded-xl px-3 py-2 text-xs text-[#4A3B32] focus:outline-none focus:border-[#D87A56]">
           </div>
 
           <div class="space-y-1">
@@ -221,8 +221,8 @@
   </div>
 
   <script>
-    // State Data Setup
     const EDUCATION_OFFICES = [
+      { code: '', name: '전체 (전국 학교)' },
       { code: 'B10', name: '서울특별시교육청' },
       { code: 'C10', name: '부산광역시교육청' },
       { code: 'D10', name: '대구광역시교육청' },
@@ -242,74 +242,39 @@
       { code: 'T10', name: '제주특별자치도교육청' },
     ];
 
-    const MOCK_MEALS = [
-      {
-        day: '월',
-        date: '2026-07-27',
-        menuTitle: '시골 된장찌개 정식',
-        img: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=600&q=80',
-        items: ['현미밥', '달래 된장찌개', '그릴에 구운 떡갈비', '콩나물무침', '포기김치', '제철 찰옥수수'],
-        calories: '625 kcal'
-      },
-      {
-        day: '화',
-        date: '2026-07-28',
-        menuTitle: '산채 비빔밥',
-        img: 'https://images.unsplash.com/photo-1553163147-622ab57be1c7?auto=format&fit=crop&w=600&q=80',
-        items: ['오곡밥', '국산 나물 비빔밥', '콩나물국', '훈제오리 구이', '깍두기', '수제 식혜'],
-        calories: '580 kcal'
-      },
-      {
-        day: '수',
-        date: '2026-07-29',
-        menuTitle: '할매표 닭볶음탕',
-        img: 'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=600&q=80',
-        items: ['쌀밥', '매콤 닭볶음탕', '바삭 멸치볶음', '배추김치', '수박 한 조각', '우유'],
-        calories: '690 kcal'
-      },
-      {
-        day: '목',
-        date: '2026-07-30',
-        menuTitle: '해물파전과 칼국수',
-        img: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80',
-        items: ['고소한 보리밥', '바지락 칼국수', '노릇 해물파전', '열무김치', '자두'],
-        calories: '640 kcal'
-      },
-      {
-        day: '금',
-        date: '2026-07-31',
-        menuTitle: '뚝배기 불고기',
-        img: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80',
-        items: ['잡곡밥', '뚝배기 소불고기', '잡채', '동치미', '수제 약과'],
-        calories: '710 kcal'
-      }
+    const FOOD_IMAGES = [
+      'https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1553163147-622ab57be1c7?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1626777552726-4a6b54c97e46?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80',
+      'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80'
     ];
 
-    const MOCK_EVENTS = [
-      { date: '2026-07-03', title: '1학기 기말고사', type: 'exam' },
-      { date: '2026-07-10', title: '동아리 발표회', type: 'event' },
-      { date: '2026-07-17', title: '제헌절 기념 조회', type: 'notice' },
-      { date: '2026-07-24', title: '여름방학식', type: 'vacation' },
-      { date: '2026-07-27', title: '여름방학 방과후 학교 시작', type: 'study' },
-      { date: '2026-08-15', title: '광복절 (공휴일)', type: 'holiday' },
-      { date: '2026-08-20', title: '2학기 개학식', type: 'event' }
-    ];
+    // Get Today's Date String YYYY-MM-DD
+    const todayObj = new Date();
+    const todayYYYY = todayObj.getFullYear();
+    const todayMM = String(todayObj.getMonth() + 1).padStart(2, '0');
+    const todayDD = String(todayObj.getDate()).padStart(2, '0');
+    const todayStr = `${todayYYYY}-${todayMM}-${todayDD}`;
+    const todayYearMonth = `${todayYYYY}${todayMM}`;
 
     // Global Application State
     const state = {
       activeTab: 'home',
       hasCheckedIn: false,
       officeCode: 'B10',
-      selectedSchool: {
+      selectedSchool: JSON.parse(localStorage.getItem('selected_school') || JSON.stringify({
         code: '7010536',
         name: '서울강남초등학교',
         officeCode: 'B10',
         officeName: '서울특별시교육청'
-      },
+      })),
+      neisApiKey: localStorage.getItem('neis_api_key') || '',
       geminiApiKey: localStorage.getItem('gemini_api_key') || '',
-      currentYearMonth: '202607',
-      meals: MOCK_MEALS,
-      events: MOCK_EVENTS,
+      currentYearMonth: todayYearMonth, // YYYYMM
+      isLoading: false,
+      meals: [],      // Fetched NEIS meals
+      events: [],     // Fetched NEIS schedules
       showHearts: false,
       pigState: {
         name: '복돈이',
@@ -323,7 +288,7 @@
       },
       chatMessages: [
         { id: 1, sender: 'grandma', text: '어이고~ 우리 강아지 왔는가? 밥은 굶지 않고 다니고 있지?' },
-        { id: 2, sender: 'grandma', text: '오늘 학교 점심 메뉴나 이번 주 일정 궁금한 거 있으면 할미한테 다 물어보그라!' }
+        { id: 2, sender: 'grandma', text: '오늘 학교 점심 메뉴나 이번 달 학사일정이 궁금하면 언제든 물어보렴!' }
       ],
       isChatTyping: false
     };
@@ -402,8 +367,106 @@
       }, 2500);
     }
 
+    // Clean dish name from NEIS HTML and allergy tags (e.g. 1.2.5.6.)
+    function cleanDishName(rawHtml) {
+      if (!rawHtml) return [];
+      return rawHtml
+        .replace(/<br\s*\/?>/gi, '\n')
+        .split('\n')
+        .map(dish => dish.replace(/\([0-9\.\s]+\)/g, '').replace(/[0-9\.]+/g, '').trim())
+        .filter(dish => dish.length > 0);
+    }
+
+    // Fetch School Data from NEIS Hub OpenAPI
+    async function fetchSchoolData(school, yearMonthStr) {
+      state.isLoading = true;
+      renderTab();
+
+      const year = yearMonthStr.slice(0, 4);
+      const month = yearMonthStr.slice(4, 6);
+      
+      // Calculate start and end date of month
+      const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
+      const fromYmd = `${yearMonthStr}01`;
+      const toYmd = `${yearMonthStr}${String(lastDay).padStart(2, '0')}`;
+
+      const apiKeyParam = state.neisApiKey ? `&KEY=${state.neisApiKey}` : '';
+      const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
+
+      // 1. Fetch Meal Service Info
+      try {
+        const mealUrl = `https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&pIndex=1&pSize=100${apiKeyParam}&ATPT_OFCDC_SC_CODE=${school.officeCode}&SD_SCHUL_CODE=${school.code}&MLSV_FROM_YMD=${fromYmd}&MLSV_TO_YMD=${toYmd}`;
+        const mealRes = await fetch(mealUrl);
+        const mealData = await mealRes.json();
+
+        if (mealData.mealServiceDietInfo && mealData.mealServiceDietInfo[1]?.row) {
+          const rows = mealData.mealServiceDietInfo[1].row;
+          state.meals = rows.map((row, idx) => {
+            const rawDD = row.MLSV_YMD;
+            const formattedDate = `${rawDD.slice(0,4)}-${rawDD.slice(4,6)}-${rawDD.slice(6,8)}`;
+            const dateObj = new Date(formattedDate);
+            const dayName = daysOfWeek[dateObj.getDay()] || '';
+            const cleanedItems = cleanDishName(row.DDISH_NM);
+
+            return {
+              day: dayName,
+              date: formattedDate,
+              menuTitle: cleanedItems[0] ? cleanedItems[0] : '학교 급식',
+              img: FOOD_IMAGES[idx % FOOD_IMAGES.length],
+              items: cleanedItems,
+              calories: row.CAL_INFO || '정보 없음',
+              mealType: row.MMEAL_SC_NM || '중식'
+            };
+          });
+        } else {
+          state.meals = [];
+        }
+      } catch (err) {
+        console.error('NEIS Meal API Fetch Error:', err);
+        state.meals = [];
+      }
+
+      // 2. Fetch School Schedule Info
+      try {
+        const schedUrl = `https://open.neis.go.kr/hub/SchoolSchedule?Type=json&pIndex=1&pSize=100${apiKeyParam}&ATPT_OFCDC_SC_CODE=${school.officeCode}&SD_SCHUL_CODE=${school.code}&AA_FROM_YMD=${fromYmd}&AA_TO_YMD=${toYmd}`;
+        const schedRes = await fetch(schedUrl);
+        const schedData = await schedRes.json();
+
+        if (schedData.SchoolSchedule && schedData.SchoolSchedule[1]?.row) {
+          const rows = schedData.SchoolSchedule[1].row;
+          state.events = rows
+            .filter(row => row.EVENT_NM && row.EVENT_NM.trim() !== '토요휴업일')
+            .map(row => {
+              const rawDD = row.AA_YMD;
+              const formattedDate = `${rawDD.slice(0,4)}-${rawDD.slice(4,6)}-${rawDD.slice(6,8)}`;
+              let type = '행사';
+              if (row.EVENT_NM.includes('시험') || row.EVENT_NM.includes('고사')) type = '시험';
+              else if (row.EVENT_NM.includes('방학') || row.EVENT_NM.includes('휴업')) type = '휴일';
+              else if (row.EVENT_NM.includes('개학') || row.EVENT_NM.includes('입학')) type = '학사';
+
+              return {
+                date: formattedDate,
+                title: row.EVENT_NM.trim(),
+                type: type,
+                content: row.EVENT_CNTNT || ''
+              };
+            });
+        } else {
+          state.events = [];
+        }
+      } catch (err) {
+        console.error('NEIS Schedule API Fetch Error:', err);
+        state.events = [];
+      }
+
+      state.isLoading = false;
+      renderTab();
+    }
+
     function renderHomeTab() {
-      const todayMeal = state.meals[0] || MOCK_MEALS[0];
+      // Find today's meal or closest upcoming meal
+      const todayMeal = state.meals.find(m => m.date === todayStr) || state.meals[0];
+
       return `
         <div class="space-y-4 animate-fadeIn">
           <!-- Daily Attendance Card -->
@@ -439,7 +502,7 @@
                 "아이고~ 우리 강아지 왔는가? 손 씻고 밥 먹을 준비 하거라!"
               </p>
               <p class="text-xs text-[#8A715D] mt-1">
-                오늘도 따스한 시골밥상 급식이 준비되어 있단다.
+                ${state.selectedSchool.name} 급식이 나이스(NEIS)에서 실시간 연결되었단다.
               </p>
             </div>
           </div>
@@ -451,27 +514,40 @@
                 <span class="bg-[#7C9473] text-white text-xs px-2.5 py-1 rounded-lg font-bold">
                   오늘의 급식
                 </span>
-                <span class="text-xs text-[#8C6A50] font-medium">${todayMeal.date}</span>
+                <span class="text-xs text-[#8C6A50] font-medium">${todayStr} (${todayMeal ? todayMeal.day : '오늘'})</span>
               </div>
               <button id="btn-go-meals" class="text-xs text-[#D87A56] font-bold flex items-center hover:underline">
-                주간 전체보기 <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-0.5"></i>
+                이달 전체보기 <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-0.5"></i>
               </button>
             </div>
 
-            <div class="flex gap-3 items-center">
-              <div class="w-24 h-24 rounded-xl overflow-hidden shadow-inner border border-[#E0D0C0] flex-shrink-0">
-                <img src="${todayMeal.img}" alt="오늘의 급식 식단" class="w-full h-full object-cover" />
+            ${state.isLoading ? `
+              <div class="text-center py-8 text-xs text-[#8C7462] animate-pulse">
+                👵 나이스에서 오늘의 급식을 가져오고 있단다...
               </div>
-              <div class="flex-1">
-                <h3 class="font-bold text-base text-[#4A3B32]">${todayMeal.menuTitle}</h3>
-                <ul class="text-xs text-[#6E5A4C] mt-1 space-y-0.5">
-                  ${todayMeal.items.slice(0, 4).map(item => `<li class="truncate">• ${item}</li>`).join('')}
-                </ul>
-                <span class="text-[11px] font-semibold text-[#8A7B6D] bg-[#F5ECE2] px-2 py-0.5 rounded-full inline-block mt-2">
-                  🔥 ${todayMeal.calories}
-                </span>
+            ` : todayMeal ? `
+              <div class="flex gap-3 items-center">
+                <div class="w-24 h-24 rounded-xl overflow-hidden shadow-inner border border-[#E0D0C0] flex-shrink-0">
+                  <img src="${todayMeal.img}" alt="오늘의 급식 식단" class="w-full h-full object-cover" />
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-center gap-1.5">
+                    <h3 class="font-bold text-sm text-[#4A3B32]">${todayMeal.menuTitle}</h3>
+                    <span class="text-[10px] bg-[#E8D8C8] text-[#5C3A21] px-1.5 py-0.2 rounded font-semibold">${todayMeal.mealType}</span>
+                  </div>
+                  <ul class="text-xs text-[#6E5A4C] mt-1 space-y-0.5">
+                    ${todayMeal.items.slice(0, 4).map(item => `<li class="truncate">• ${item}</li>`).join('')}
+                  </ul>
+                  <span class="text-[11px] font-semibold text-[#8A7B6D] bg-[#F5ECE2] px-2 py-0.5 rounded-full inline-block mt-2">
+                    🔥 ${todayMeal.calories}
+                  </span>
+                </div>
               </div>
-            </div>
+            ` : `
+              <div class="text-center py-6 text-xs text-[#8C6A50] bg-[#FAF5ED] rounded-xl border border-[#E8DCD0]">
+                오늘(${todayStr})은 등록된 급식 정보가 없단다.<br/>주말이거나 휴업일일 수 있단다! 🏡
+              </div>
+            `}
           </div>
 
           <!-- Pig Pet Mini Status -->
@@ -502,76 +578,112 @@
     }
 
     function renderMealsTab() {
+      const year = state.currentYearMonth.slice(0, 4);
+      const month = parseInt(state.currentYearMonth.slice(4, 6));
+
       return `
         <div class="space-y-4 animate-fadeIn">
           <div class="bg-[#FAF0E6] p-3.5 rounded-2xl border border-[#E8D8C8] flex items-center justify-between">
             <div>
-              <h2 class="font-bold text-base text-[#4A3B32]">주간 정성 식단표</h2>
-              <p class="text-xs text-[#8C6A50]">NEIS 학교 급식 정보 연동</p>
+              <h2 class="font-bold text-base text-[#4A3B32]">${year}년 ${month}월 정성 식단표</h2>
+              <p class="text-xs text-[#8C6A50]">나이스(NEIS) 실시간 연동</p>
             </div>
-            <span class="text-xs bg-[#7C9473] text-white px-2.5 py-1 rounded-lg font-bold">
+            <span class="text-xs bg-[#7C9473] text-white px-2.5 py-1 rounded-lg font-bold max-w-[140px] truncate">
               ${state.selectedSchool.name}
             </span>
           </div>
 
-          <div class="space-y-3.5">
-            ${state.meals.map(meal => `
-              <div class="bg-white rounded-2xl border border-[#E2D5C3] shadow-sm overflow-hidden">
-                <div class="bg-[#FAF3E5] px-4 py-2 border-b border-[#EADBC8] flex justify-between items-center">
-                  <div class="flex items-center gap-2">
-                    <span class="w-6 h-6 rounded-full bg-[#D87A56] text-white text-xs font-bold flex items-center justify-center">
-                      ${meal.day}
-                    </span>
-                    <span class="text-xs font-bold text-[#5C4535]">${meal.date}</span>
-                  </div>
-                  <span class="text-[11px] text-[#8C7462] font-semibold">🔥 ${meal.calories}</span>
-                </div>
-                <div class="p-3.5 flex gap-3.5 items-center">
-                  <div class="w-24 h-24 rounded-xl overflow-hidden border border-[#E2D5C3] flex-shrink-0 shadow-inner">
-                    <img src="${meal.img}" alt="${meal.menuTitle}" class="w-full h-full object-cover" />
-                  </div>
-                  <div class="flex-1 space-y-1">
-                    <h4 class="font-bold text-sm text-[#4A3B32]">${meal.menuTitle}</h4>
-                    <div class="text-xs text-[#6E5A4C] leading-relaxed">
-                      ${meal.items.map(item => `
-                        <span class="inline-block bg-[#F8F2E8] text-[#5C483A] px-2 py-0.5 rounded-md mr-1 mb-1 border border-[#EFE5D8]">
-                          ${item}
+          <!-- Month Selector -->
+          <div class="flex items-center justify-between bg-white px-4 py-2.5 rounded-xl border border-[#E2D5C3] text-sm font-bold text-[#4A3B32]">
+            <button id="btn-prev-month-meal" class="p-1 hover:bg-[#FAF3E5] rounded-lg transition-colors flex items-center gap-1 text-xs">
+              <i data-lucide="chevron-left" class="w-4 h-4"></i> 이전 달
+            </button>
+            <span>${year}년 ${month}월</span>
+            <button id="btn-next-month-meal" class="p-1 hover:bg-[#FAF3E5] rounded-lg transition-colors flex items-center gap-1 text-xs">
+              다음 달 <i data-lucide="chevron-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          ${state.isLoading ? `
+            <div class="bg-white rounded-2xl p-12 text-center text-xs text-[#8C7462] border border-[#E2D5C3] space-y-2">
+              <div class="w-8 h-8 border-2 border-[#D87A56] border-t-transparent rounded-full animate-spin mx-auto"></div>
+              <p>나이스(NEIS)에서 이번 달 급식 정보를 끌어오고 있습니다...</p>
+            </div>
+          ` : state.meals.length === 0 ? `
+            <div class="bg-white rounded-2xl p-8 text-center text-xs text-[#8C7462] border border-[#E2D5C3]">
+              👵 이번 달에는 나이스에 등록된 급식 정보가 없단다.<br/>방학 기간이거나 학교 일정에 따라 작성되지 않았을 수 있단다.
+            </div>
+          ` : `
+            <div class="space-y-3.5">
+              ${state.meals.map(meal => {
+                const isToday = meal.date === todayStr;
+                return `
+                  <div class="bg-white rounded-2xl border ${isToday ? 'border-2 border-[#D87A56]' : 'border-[#E2D5C3]'} shadow-sm overflow-hidden">
+                    <div class="${isToday ? 'bg-[#FFE4D6]' : 'bg-[#FAF3E5]'} px-4 py-2 border-b border-[#EADBC8] flex justify-between items-center">
+                      <div class="flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full ${isToday ? 'bg-[#C04818]' : 'bg-[#D87A56]'} text-white text-xs font-bold flex items-center justify-center">
+                          ${meal.day}
                         </span>
-                      `).join('')}
+                        <span class="text-xs font-bold text-[#5C4535]">${meal.date}</span>
+                        ${isToday ? '<span class="bg-[#D87A56] text-white text-[10px] px-2 py-0.5 rounded-full font-bold">오늘</span>' : ''}
+                      </div>
+                      <span class="text-[11px] text-[#8C7462] font-semibold">🔥 ${meal.calories}</span>
+                    </div>
+                    <div class="p-3.5 flex gap-3.5 items-center">
+                      <div class="w-20 h-20 rounded-xl overflow-hidden border border-[#E2D5C3] flex-shrink-0 shadow-inner">
+                        <img src="${meal.img}" alt="${meal.menuTitle}" class="w-full h-full object-cover" />
+                      </div>
+                      <div class="flex-1 space-y-1">
+                        <div class="flex items-center gap-1.5">
+                          <h4 class="font-bold text-sm text-[#4A3B32]">${meal.menuTitle}</h4>
+                          <span class="text-[10px] bg-[#F5ECE2] text-[#8A715D] px-1.5 py-0.2 rounded">${meal.mealType}</span>
+                        </div>
+                        <div class="text-xs text-[#6E5A4C] leading-relaxed">
+                          ${meal.items.map(item => `
+                            <span class="inline-block bg-[#F8F2E8] text-[#5C483A] px-2 py-0.5 rounded-md mr-1 mb-1 border border-[#EFE5D8]">
+                              ${item}
+                            </span>
+                          `).join('')}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            `).join('')}
-          </div>
+                `;
+              }).join('')}
+            </div>
+          `}
         </div>
       `;
     }
 
     function renderCalendarTab() {
       const year = state.currentYearMonth.slice(0, 4);
-      const month = parseInt(state.currentYearMonth.slice(4));
+      const month = parseInt(state.currentYearMonth.slice(4, 6));
+
+      // Calculate calendar dates for display
+      const firstDayOfMonth = new Date(parseInt(year), month - 1, 1).getDay();
+      const daysInMonth = new Date(parseInt(year), month, 0).getDate();
 
       return `
         <div class="space-y-4 animate-fadeIn">
           <div class="bg-[#FAF0E6] p-3.5 rounded-2xl border border-[#E8D8C8] flex items-center justify-between">
             <div>
-              <h2 class="font-bold text-base text-[#4A3B32]">우리 학교 주요 일정</h2>
-              <p class="text-xs text-[#8C6A50]">NEIS 학사일정 정보 연동</p>
+              <h2 class="font-bold text-base text-[#4A3B32]">우리 학교 학사일정</h2>
+              <p class="text-xs text-[#8C6A50]">나이스(NEIS) 학사일정 정보 연동</p>
             </div>
-            <span class="text-xs bg-[#D87A56] text-white px-2.5 py-1 rounded-lg font-bold">
+            <span class="text-xs bg-[#D87A56] text-white px-2.5 py-1 rounded-lg font-bold max-w-[140px] truncate">
               ${state.selectedSchool.name}
             </span>
           </div>
 
           <div class="bg-white rounded-2xl border border-[#E2D5C3] p-4 shadow-sm space-y-3">
             <div class="flex items-center justify-between text-sm font-bold text-[#4A3B32]">
-              <button id="btn-prev-month" class="p-1 hover:bg-[#FAF3E5] rounded-lg transition-colors">
-                <i data-lucide="chevron-left" class="w-5 h-5"></i>
+              <button id="btn-prev-month-cal" class="p-1 hover:bg-[#FAF3E5] rounded-lg transition-colors flex items-center gap-1 text-xs">
+                <i data-lucide="chevron-left" class="w-4 h-4"></i> 이전 달
               </button>
               <span>${year}년 ${month}월</span>
-              <button id="btn-next-month" class="p-1 hover:bg-[#FAF3E5] rounded-lg transition-colors">
-                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+              <button id="btn-next-month-cal" class="p-1 hover:bg-[#FAF3E5] rounded-lg transition-colors flex items-center gap-1 text-xs">
+                다음 달 <i data-lucide="chevron-right" class="w-4 h-4"></i>
               </button>
             </div>
 
@@ -579,19 +691,31 @@
               ${['일','월','화','수','목','금','토'].map((d, i) => `
                 <div class="font-bold py-1 ${i === 0 ? 'text-red-500' : i === 6 ? 'text-blue-500' : 'text-[#6E5A4C]'}">${d}</div>
               `).join('')}
-              ${Array.from({ length: 31 }, (_, i) => i + 1).map(day => {
+
+              ${/* Blank days before 1st day */ Array.from({ length: firstDayOfMonth }).map(() => `
+                <div class="p-1.5 opacity-0"></div>
+              `).join('')}
+
+              ${/* Month days */ Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
                 const dayStr = String(day).padStart(2, '0');
                 const matchDateStr = `${year}-${String(month).padStart(2, '0')}-${dayStr}`;
-                const hasEvent = state.events.some(e => e.date === matchDateStr);
+                const dayEvents = state.events.filter(e => e.date === matchDateStr);
+                const hasEvent = dayEvents.length > 0;
+                const isToday = matchDateStr === todayStr;
 
                 return `
-                  <div class="p-1.5 rounded-xl flex flex-col items-center justify-center font-semibold ${
-                    hasEvent 
-                      ? 'bg-[#FDE2D1] text-[#C04818] border border-[#F3BCA0]' 
-                      : 'hover:bg-[#FAF3E5] text-[#5C483A]'
+                  <div class="min-h-[42px] p-1 rounded-xl flex flex-col items-center justify-start font-semibold relative border ${
+                    isToday ? 'border-2 border-[#D87A56] bg-[#FFE4D6]' :
+                    hasEvent ? 'bg-[#FDE2D1] text-[#C04818] border-[#F3BCA0]' : 
+                    'hover:bg-[#FAF3E5] text-[#5C483A] border-transparent'
                   }">
-                    <span>${day}</span>
-                    ${hasEvent ? '<span class="w-1.5 h-1.5 bg-[#D87A56] rounded-full mt-0.5"></span>' : ''}
+                    <span class="${isToday ? 'font-extrabold text-[#D87A56]' : ''}">${day}</span>
+                    ${hasEvent ? `
+                      <span class="w-1.5 h-1.5 bg-[#D87A56] rounded-full mt-0.5"></span>
+                      <span class="text-[9px] text-[#A03000] truncate w-full px-0.5 leading-tight mt-0.5 font-normal">
+                        ${dayEvents[0].title}
+                      </span>
+                    ` : ''}
                   </div>
                 `;
               }).join('')}
@@ -599,11 +723,19 @@
           </div>
 
           <div class="bg-white rounded-2xl border border-[#E2D5C3] p-4 shadow-sm space-y-2.5">
-            <h3 class="font-bold text-xs text-[#6E5A4C] border-b border-[#EADBC8] pb-1.5">이달의 주요 행사</h3>
-            ${state.events.length === 0 ? `
-              <p class="text-xs text-[#8C6A50] py-2 text-center">등록된 주요 학사 일정이 없습니다.</p>
+            <h3 class="font-bold text-xs text-[#6E5A4C] border-b border-[#EADBC8] pb-1.5 flex justify-between items-center">
+              <span>이달의 주요 행사 (${year}.${month})</span>
+              <span class="text-[10px] text-[#8C6A50] font-normal">총 ${state.events.length}건</span>
+            </h3>
+
+            ${state.isLoading ? `
+              <div class="text-center py-6 text-xs text-[#8C7462] animate-pulse">
+                👵 학사일정 정보를 불러오고 있습니다...
+              </div>
+            ` : state.events.length === 0 ? `
+              <p class="text-xs text-[#8C6A50] py-4 text-center">이번 달에는 나이스에 등록된 주요 학사 일정이 없단다.</p>
             ` : state.events.map(ev => `
-              <div class="flex items-center justify-between text-xs py-1 border-b border-dashed border-[#F0E4D8] last:border-0">
+              <div class="flex items-center justify-between text-xs py-1.5 border-b border-dashed border-[#F0E4D8] last:border-0">
                 <div class="flex items-center gap-2">
                   <span class="bg-[#F3E2D0] text-[#5C4535] px-2 py-0.5 rounded font-bold text-[11px]">
                     ${ev.date.slice(5)}
@@ -717,7 +849,7 @@
           </div>
 
           <div class="mt-3 flex gap-2">
-            <input type="text" id="chat-input-text" placeholder="할머니, 오늘 학교 급식 맛있어? or 자유 대화" class="flex-1 bg-white border border-[#D0B8A0] rounded-xl px-3.5 py-2.5 text-xs text-[#4A3B32] focus:outline-none focus:border-[#D87A56] shadow-inner">
+            <input type="text" id="chat-input-text" placeholder="할머니, 오늘 학교 급식 맛있는거야? or 자유 대화" class="flex-1 bg-white border border-[#D0B8A0] rounded-xl px-3.5 py-2.5 text-xs text-[#4A3B32] focus:outline-none focus:border-[#D87A56] shadow-inner">
             <button id="btn-send-chat" class="bg-[#D87A56] hover:bg-[#C26946] text-white px-4 rounded-xl font-bold text-xs flex items-center justify-center transition-all active:scale-95 shadow">
               <i data-lucide="send" class="w-4 h-4"></i>
             </button>
@@ -746,23 +878,17 @@
       const btnGoPig = document.getElementById('btn-go-pig');
       if (btnGoPig) btnGoPig.addEventListener('click', () => switchTab('pig'));
 
-      // Calendar Events
-      const btnPrevMonth = document.getElementById('btn-prev-month');
-      const btnNextMonth = document.getElementById('btn-next-month');
-      if (btnPrevMonth) {
-        btnPrevMonth.addEventListener('click', () => {
-          state.currentYearMonth = '202606';
-          fetchSchoolData(state.selectedSchool, state.currentYearMonth);
-          renderTab();
-        });
-      }
-      if (btnNextMonth) {
-        btnNextMonth.addEventListener('click', () => {
-          state.currentYearMonth = '202608';
-          fetchSchoolData(state.selectedSchool, state.currentYearMonth);
-          renderTab();
-        });
-      }
+      // Meal Month Navigation
+      const btnPrevMeal = document.getElementById('btn-prev-month-meal');
+      const btnNextMeal = document.getElementById('btn-next-month-meal');
+      if (btnPrevMeal) btnPrevMeal.addEventListener('click', () => changeMonth(-1));
+      if (btnNextMeal) btnNextMeal.addEventListener('click', () => changeMonth(1));
+
+      // Calendar Month Navigation
+      const btnPrevCal = document.getElementById('btn-prev-month-cal');
+      const btnNextCal = document.getElementById('btn-next-month-cal');
+      if (btnPrevCal) btnPrevCal.addEventListener('click', () => changeMonth(-1));
+      if (btnNextCal) btnNextCal.addEventListener('click', () => changeMonth(1));
 
       // Pig Events
       const btnFeed = document.getElementById('btn-feed-pig');
@@ -829,12 +955,34 @@
       }
     }
 
+    function changeMonth(delta) {
+      let y = parseInt(state.currentYearMonth.slice(0, 4));
+      let m = parseInt(state.currentYearMonth.slice(4, 6)) + delta;
+
+      if (m > 12) {
+        y += 1;
+        m = 1;
+      } else if (m < 1) {
+        y -= 1;
+        m = 12;
+      }
+
+      state.currentYearMonth = `${y}${String(m).padStart(2, '0')}`;
+      fetchSchoolData(state.selectedSchool, state.currentYearMonth);
+    }
+
     async function sendAiChatResponse(userMsg) {
       const apiKey = state.geminiApiKey.trim();
+      const todayMeal = state.meals.find(m => m.date === todayStr);
+      const mealInfoText = todayMeal 
+        ? `오늘 급식 메뉴: ${todayMeal.items.join(', ')} (${todayMeal.calories})` 
+        : '오늘 급식 정보 없음';
+
       const systemPrompt = `당신은 시골 한옥집에 사는 다정하고 따뜻한 '시골 할머니'입니다. 
 말투는 항상 한국 시골 할머니의 정감 어린 구수한 어조(~했단다, ~했냐?, 오냐 우리 강아지, 밥은 먹고 다니냐 등)를 유지하세요.
-사용자가 학교 급식, 학교 행사, 학사일정, 고민거리에 대해 질문하면 친절하게 답해주세요.
-현재 사용자가 선택한 학교는 [${state.selectedSchool.name}]입니다.`;
+사용자가 선택한 학교는 [${state.selectedSchool.name}]입니다.
+오늘 급식 정보: ${mealInfoText}
+사용자의 질문에 정겹게 답해주세요.`;
 
       let replyText = '';
 
@@ -861,7 +1009,13 @@
 
       if (!replyText) {
         await new Promise(res => setTimeout(res, 800));
-        replyText = `오냐 우리 강아지~ ${state.selectedSchool.name} 다니느라 고생이 많구나! 밥은 꼭 챙겨먹고 다녀라~`;
+        if (userMsg.includes('급식') || userMsg.includes('밥') || userMsg.includes('점심')) {
+          replyText = todayMeal 
+            ? `오냐 우리 강아지~ 오늘 ${state.selectedSchool.name} 점심은 ${todayMeal.items.slice(0, 3).join(', ')} 등이 나온단다. 남기지 말고 싹싹 다 먹어야 한단다!`
+            : `오늘 ${state.selectedSchool.name} 급식은 휴업일이거나 정보가 없구나. 집에서 할미랑 같이 밥 먹자꾸나!`;
+        } else {
+          replyText = `오냐 우리 강아지~ ${state.selectedSchool.name} 다니느라 고생이 많구나! 밥은 꼭 챙겨먹고 건강하거라~`;
+        }
       }
 
       state.isChatTyping = false;
@@ -883,51 +1037,9 @@
       }
     }
 
-    async function fetchSchoolData(school, yymm = '202607') {
-      try {
-        const mealUrl = `/api/generate?endpoint=mealServiceDietInfo&officeCode=${school.officeCode}&schoolCode=${school.code}&ym=${yymm}`;
-        const mealRes = await fetch(mealUrl);
-        const mealJson = await mealRes.json();
-
-        if (mealJson.mealServiceDietInfo && mealJson.mealServiceDietInfo[1]?.row) {
-          const fetchedRows = mealJson.mealServiceDietInfo[1].row;
-          const daysMap = ['일', '월', '화', '수', '목', '금', '토'];
-
-          const mappedMeals = fetchedRows.slice(0, 5).map((row, idx) => {
-            const rawDD = row.MLSV_YMD;
-            const formattedDate = `${rawDD.slice(0,4)}-${rawDD.slice(4,6)}-${rawDD.slice(6,8)}`;
-            const dateObj = new Date(formattedDate);
-            const dayName = daysMap[dateObj.getDay()] || '월';
-
-            const items = row.DDISH_NM
-              .replace(/<br\/>/g, '\n')
-              .split('\n')
-              .map(item => item.replace(/\([0-9\.\s]+\)/g, '').replace(/[0-9]+\./g, '').trim())
-              .filter(Boolean);
-
-            return {
-              day: dayName,
-              date: formattedDate,
-              menuTitle: items[0] ? `${items[0]} 특식` : '할머니 정성 급식',
-              img: MOCK_MEALS[idx % MOCK_MEALS.length].img,
-              items: items.length > 0 ? items : MOCK_MEALS[idx % MOCK_MEALS.length].items,
-              calories: row.CAL_INFO || '650 kcal'
-            };
-          });
-
-          if (mappedMeals.length > 0) state.meals = mappedMeals;
-        }
-      } catch (e) {
-        console.log('Using default mock meal dataset');
-      }
-
-      renderTab();
-    }
-
     function switchTab(tabId) {
       state.activeTab = tabId;
 
-      // Update bottom nav active classes
       document.querySelectorAll('.nav-btn').forEach(btn => {
         const isTarget = btn.dataset.tab === tabId;
         btn.className = `nav-btn flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all ${
@@ -955,7 +1067,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      // Header School Name Sync
       const updateHeaderBadge = () => {
         const badge = document.getElementById('header-school-badge');
         if (badge) {
@@ -983,8 +1094,10 @@
       });
 
       document.getElementById('btn-open-api')?.addEventListener('click', () => {
-        const keyInput = document.getElementById('gemini-key-input');
-        if (keyInput) keyInput.value = state.geminiApiKey;
+        const neisKeyInput = document.getElementById('neis-key-input');
+        const geminiKeyInput = document.getElementById('gemini-key-input');
+        if (neisKeyInput) neisKeyInput.value = state.neisApiKey;
+        if (geminiKeyInput) geminiKeyInput.value = state.geminiApiKey;
         modalApi.classList.remove('hidden');
       });
       document.getElementById('btn-close-api')?.addEventListener('click', () => {
@@ -992,16 +1105,22 @@
       });
 
       document.getElementById('btn-save-api')?.addEventListener('click', () => {
-        const keyInput = document.getElementById('gemini-key-input');
-        if (keyInput) {
-          state.geminiApiKey = keyInput.value.trim();
-          localStorage.setItem('gemini_api_key', state.geminiApiKey);
-          showToast('🔑 API 키 설정이 저장되었습니다!');
+        const neisKeyInput = document.getElementById('neis-key-input');
+        const geminiKeyInput = document.getElementById('gemini-key-input');
+        if (neisKeyInput) {
+          state.neisApiKey = neisKeyInput.value.trim();
+          localStorage.setItem('neis_api_key', state.neisApiKey);
         }
+        if (geminiKeyInput) {
+          state.geminiApiKey = geminiKeyInput.value.trim();
+          localStorage.setItem('gemini_api_key', state.geminiApiKey);
+        }
+        showToast('🔑 API 키 설정이 저장되었습니다!');
         modalApi.classList.add('hidden');
+        fetchSchoolData(state.selectedSchool, state.currentYearMonth);
       });
 
-      // School Search Execution
+      // School Search Execution using Real NEIS Hub schoolInfo API
       const btnSearchSchool = document.getElementById('btn-search-school');
       const schoolQueryInput = document.getElementById('school-query-input');
       const schoolResultsContainer = document.getElementById('school-search-results');
@@ -1010,12 +1129,14 @@
         const query = schoolQueryInput.value.trim();
         if (!query) return;
 
-        schoolResultsContainer.innerHTML = `<div class="text-center py-4 text-xs text-[#8C7462]">학교 검색 중...</div>`;
+        schoolResultsContainer.innerHTML = `<div class="text-center py-4 text-xs text-[#8C7462]">나이스에서 학교 검색 중...</div>`;
         const selectedOffice = officeSelect.value;
-        const selectedOfficeObj = EDUCATION_OFFICES.find(o => o.code === selectedOffice);
 
         try {
-          const url = `/api/generate?endpoint=schoolInfo&officeCode=${selectedOffice}&searchQuery=${encodeURIComponent(query)}`;
+          const apiKeyParam = state.neisApiKey ? `&KEY=${state.neisApiKey}` : '';
+          const officeParam = selectedOffice ? `&ATPT_OFCDC_SC_CODE=${selectedOffice}` : '';
+          const url = `https://open.neis.go.kr/hub/schoolInfo?Type=json&pIndex=1&pSize=50${apiKeyParam}${officeParam}&SCHUL_NM=${encodeURIComponent(query)}`;
+          
           const res = await fetch(url);
           const data = await res.json();
 
@@ -1025,33 +1146,22 @@
               name: item.SCHUL_NM,
               officeCode: item.ATPT_OFCDC_SC_CODE,
               officeName: item.ATPT_OFCDC_SC_NM,
-              location: item.ORG_RDNMA || item.ORG_LNM || '시도 지역'
+              location: item.ORG_RDNMA || item.ORG_LNM || '시도 교육청 지역'
             }));
 
             renderSchoolSearchResults(list);
           } else {
-            renderSchoolSearchResults([{
-              code: '7010536',
-              name: query.endsWith('학교') ? query : `${query}초등학교`,
-              officeCode: selectedOffice,
-              officeName: selectedOfficeObj?.name || '교육청',
-              location: '해당 지역'
-            }]);
+            schoolResultsContainer.innerHTML = `<div class="text-center py-6 text-xs text-[#8C7462]">검색 결과가 없습니다. 학교 이름을 다시 확인해 보세요.</div>`;
           }
         } catch (err) {
-          renderSchoolSearchResults([{
-            code: '7010536',
-            name: query.endsWith('학교') ? query : `${query}초등학교`,
-            officeCode: selectedOffice,
-            officeName: selectedOfficeObj?.name || '교육청',
-            location: '해당 지역'
-          }]);
+          console.error('School Search Error:', err);
+          schoolResultsContainer.innerHTML = `<div class="text-center py-6 text-xs text-red-500">학교 검색 중 오류가 발생했습니다.</div>`;
         }
       };
 
       function renderSchoolSearchResults(results) {
-        schoolResultsContainer.innerHTML = results.map(item => `
-          <button data-school-code="${item.code}" class="btn-select-school w-full text-left bg-white hover:bg-[#F3E2D0] p-2.5 rounded-xl border border-[#E8DCD0] transition-all flex items-center justify-between">
+        schoolResultsContainer.innerHTML = results.map((item, idx) => `
+          <button data-index="${idx}" class="btn-select-school w-full text-left bg-white hover:bg-[#F3E2D0] p-2.5 rounded-xl border border-[#E8DCD0] transition-all flex items-center justify-between">
             <div>
               <div class="font-bold text-xs text-[#4A3B32]">${item.name}</div>
               <div class="text-[10px] text-[#8C6A50]">${item.officeName} | ${item.location}</div>
@@ -1062,13 +1172,18 @@
 
         lucide.createIcons();
 
-        document.querySelectorAll('.btn-select-school').forEach((btn, idx) => {
+        document.querySelectorAll('.btn-select-school').forEach((btn) => {
           btn.addEventListener('click', () => {
-            state.selectedSchool = results[idx];
+            const idx = parseInt(btn.dataset.index);
+            const chosen = results[idx];
+            state.selectedSchool = chosen;
+            localStorage.setItem('selected_school', JSON.stringify(chosen));
+            
             updateHeaderBadge();
             modalSchool.classList.add('hidden');
-            showToast(`🏫 ${results[idx].name}(으)로 변경되었습니다.`);
-            fetchSchoolData(results[idx], state.currentYearMonth);
+            showToast(`🏫 ${chosen.name}(으)로 변경되었습니다.`);
+            
+            fetchSchoolData(chosen, state.currentYearMonth);
           });
         });
       }
@@ -1087,9 +1202,9 @@
         });
       });
 
-      // Initial Render
+      // Initial Fetch & Render
       updateHeaderBadge();
-      renderTab();
+      fetchSchoolData(state.selectedSchool, state.currentYearMonth);
     });
   </script>
 </body>
