@@ -41,6 +41,33 @@
     .animate-float-2 { animation: floatUp 1.4s ease-out 0.2s forwards; }
     .animate-float-3 { animation: floatUp 1.3s ease-out 0.1s forwards; }
 
+    /* 최소 2번 통통 튀는 애니메이션 */
+    @keyframes doubleBounce {
+      0%, 100% { transform: translateY(0); }
+      25% { transform: translateY(-16px); }
+      50% { transform: translateY(0); }
+      75% { transform: translateY(-10px); }
+    }
+    .animate-double-bounce { animation: doubleBounce 0.6s ease-in-out; }
+
+    /* 좌우로 흔들며 통통 튀는 춤/애교 애니메이션 */
+    @keyframes wiggleJump {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      20% { transform: translateY(-12px) rotate(-8deg); }
+      40% { transform: translateY(0) rotate(8deg); }
+      60% { transform: translateY(-12px) rotate(-8deg); }
+      80% { transform: translateY(0) rotate(8deg); }
+    }
+    .animate-wiggle-jump { animation: wiggleJump 0.7s ease-in-out; }
+
+    /* 쓰다듬을 때 배를 발라당 뒤집는(눕는) 애니메이션 */
+    @keyframes bellyUp {
+      0% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.1) rotate(15deg) translateY(-8px); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    .animate-belly-up { animation: bellyUp 0.8s ease-in-out; }
+
     ::-webkit-scrollbar {
       width: 5px;
     }
@@ -108,8 +135,8 @@
       </div>
 
       <div class="flex items-center gap-1.5">
-        <button id="btn-sound-toggle" title="효과음 켜기/끄기" class="p-2 bg-[#F5E6D3] hover:bg-[#EBD9C3] text-[#5C3A21] rounded-xl border border-[#D0B8A0] transition-all active:scale-95 shadow-sm">
-          <i data-lucide="volume-2" id="sound-icon" class="w-4 h-4"></i>
+        <button id="btn-refresh" title="새로고침" class="p-2 bg-[#F5E6D3] hover:bg-[#EBD9C3] text-[#5C3A21] rounded-xl border border-[#D0B8A0] transition-all active:scale-95 shadow-sm">
+          <i data-lucide="rotate-cw" class="w-4 h-4"></i>
         </button>
         <button id="btn-open-api" title="API Key 설정" class="p-2 bg-[#F5E6D3] hover:bg-[#EBD9C3] text-[#5C3A21] rounded-xl border border-[#D0B8A0] transition-all active:scale-95 shadow-sm">
           <i data-lucide="settings" class="w-4 h-4"></i>
@@ -163,7 +190,7 @@
         </div>
 
         <div class="space-y-1">
-          <label class="text-xs font-bold text-[#6E5A4C]">관할 교육청 선택 (선택 사항)</label>
+          <label class="text-xs font-bold text-[#6E5A4C]">관할 교육청 선택</label>
           <select id="office-select" class="w-full bg-white border border-[#D0B8A0] rounded-xl px-3 py-2 text-xs text-[#4A3B32] focus:outline-none focus:border-[#D87A56]">
           </select>
         </div>
@@ -231,83 +258,6 @@
   </div>
 
   <script>
-    // Web Audio Sound Generator Utility
-    let audioCtx = null;
-    let soundEnabled = true;
-
-    function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-    }
-
-    function playSound(type) {
-      if (!soundEnabled) return;
-      try {
-        initAudio();
-        if (!audioCtx) return;
-
-        const now = audioCtx.currentTime;
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-
-        if (type === 'click') {
-          // 가벼운 버튼 클릭음 (짧은 톡 소리)
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(450, now);
-          osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
-          gain.gain.setValueAtTime(0.15, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-          osc.start(now);
-          osc.stop(now + 0.05);
-        } else if (type === 'coin' || type === 'checkin') {
-          // 동전 획득 및 출석체크 보상음 (기분 좋은 높은음)
-          osc.type = 'triangle';
-          osc.frequency.setValueAtTime(587.33, now); // D5
-          osc.frequency.setValueAtTime(880, now + 0.08); // A5
-          gain.gain.setValueAtTime(0.2, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-          osc.start(now);
-          osc.stop(now + 0.25);
-        } else if (type === 'feed') {
-          // 먹이 주기 냠냠 소리 (아래위로 움직이는 효과)
-          osc.type = 'square';
-          osc.frequency.setValueAtTime(300, now);
-          osc.frequency.linearRampToValueAtTime(450, now + 0.1);
-          osc.frequency.linearRampToValueAtTime(350, now + 0.2);
-          gain.gain.setValueAtTime(0.12, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
-          osc.start(now);
-          osc.stop(now + 0.22);
-        } else if (type === 'pet') {
-          // 쓰다듬기 아기자기한 소리
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(523.25, now); // C5
-          osc.frequency.linearRampToValueAtTime(659.25, now + 0.1); // E5
-          gain.gain.setValueAtTime(0.15, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-          osc.start(now);
-          osc.stop(now + 0.2);
-        } else if (type === 'send') {
-          // 메시지 전송음
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(400, now);
-          osc.frequency.exponentialRampToValueAtTime(700, now + 0.1);
-          gain.gain.setValueAtTime(0.15, now);
-          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
-          osc.start(now);
-          osc.stop(now + 0.12);
-        }
-      } catch (e) {
-        console.warn('Audio play error:', e);
-      }
-    }
-
     const EDUCATION_OFFICES = [
       { code: '', name: '전체 (전국 학교)' },
       { code: 'B10', name: '서울특별시교육청' },
@@ -344,6 +294,28 @@
     const todayStr = `${todayYYYY}-${todayMM}-${todayDD}`;
     const todayYearMonth = `${todayYYYY}${todayMM}`;
 
+    function getThisWeekRange() {
+      const d = new Date();
+      const day = d.getDay();
+      const diffToMon = d.getDate() - day + (day === 0 ? -6 : 1);
+      
+      const mon = new Date(d.setDate(diffToMon));
+      const fri = new Date(mon);
+      fri.setDate(mon.getDate() + 4);
+
+      const formatDate = (dateObj) => {
+        const y = dateObj.getFullYear();
+        const m = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const dayNum = String(dateObj.getDate()).padStart(2, '0');
+        return `${y}${m}${dayNum}`;
+      };
+
+      return {
+        fromYmd: formatDate(mon),
+        toYmd: formatDate(fri)
+      };
+    }
+
     const state = {
       activeTab: 'home',
       hasCheckedIn: false,
@@ -358,11 +330,16 @@
       geminiApiKey: localStorage.getItem('gemini_api_key') || '',
       currentYearMonth: todayYearMonth,
       isLoading: false,
+      hasError: false,
+      errorMessage: '',
       meals: [],
       events: [],
       showEffect: false,
       effectType: 'hearts',
       pigExpression: 'normal',
+      pigHoldingApple: false,
+      pigActionClass: '',
+      pigSpeech: '꿀쭏! 오늘도 기분이 아주 좋단다~ 🐷',
       pigState: {
         name: '복돈이',
         level: 3,
@@ -380,7 +357,8 @@
       isChatTyping: false
     };
 
-    function getPixelPigSvg(className = "w-12 h-12", expression = 'normal') {
+    // 오리지널 귀여운 픽셀 아기 돼지 복돈이 캐릭터 SVG (배를 보일 때 다리와 발라당 누운 모양 변형)
+    function getPixelPigSvg(expression = 'normal', holdingApple = false, className = "w-24 h-24") {
       let eyeLeft = `
         <rect x="4" y="5" width="2" height="2" fill="#1E293B" />
         <rect x="4" y="5" width="1" height="1" fill="#FFFFFF" />
@@ -388,6 +366,14 @@
       let eyeRight = `
         <rect x="10" y="5" width="2" height="2" fill="#1E293B" />
         <rect x="10" y="5" width="1" height="1" fill="#FFFFFF" />
+      `;
+      let mouth = `
+        <rect x="6" y="8" width="1" height="2" fill="#BE185D" />
+        <rect x="9" y="8" width="1" height="2" fill="#BE185D" />
+      `;
+      let legsAndBelly = `
+        <rect x="4" y="13" width="2" height="2" fill="#F472B6" />
+        <rect x="10" y="13" width="2" height="2" fill="#F472B6" />
       `;
 
       if (expression === 'heart') {
@@ -405,7 +391,7 @@
           <rect x="9" y="6" width="3" height="1" fill="#E11D48" />
           <rect x="10" y="7" width="1" height="1" fill="#E11D48" />
         `;
-      } else if (expression === 'star') {
+      } else if (expression === 'star' || expression === 'dance') {
         eyeLeft = `
           <rect x="4" y="3" width="1" height="5" fill="#D97706" />
           <rect x="2" y="5" width="5" height="1" fill="#D97706" />
@@ -416,10 +402,22 @@
           <rect x="8" y="5" width="5" height="1" fill="#D97706" />
           <rect x="10" y="5" width="1" height="1" fill="#FEF08A" />
         `;
+      } else if (expression === 'sleep') {
+        eyeLeft = `<rect x="3" y="6" width="3" height="1" fill="#1E293B" />`;
+        eyeRight = `<rect x="10" y="6" width="3" height="1" fill="#1E293B" />`;
+      } else if (expression === 'kiss') {
+        mouth = `<rect x="7" y="8" width="2" height="2" fill="#E11D48" />`;
+      } else if (expression === 'belly') {
+        // 쓰다듬을 때 강아지처럼 발라당 누워서 배를 보이는 모습 (발을 위로 향함)
+        legsAndBelly = `
+          <rect x="3" y="13" width="2" height="2" fill="#F472B6" />
+          <rect x="11" y="13" width="2" height="2" fill="#F472B6" />
+          <rect x="6" y="11" width="4" height="2" fill="#FCE7F3" />
+        `;
       }
 
       return `
-        <svg viewBox="0 0 16 16" class="${className} pixel-crisp">
+        <svg viewBox="0 0 16 16" class="${className} pixel-crisp drop-shadow-md">
           <rect x="2" y="1" width="3" height="3" fill="#F472B6" />
           <rect x="3" y="2" width="1" height="1" fill="#F43F5E" />
           <rect x="11" y="1" width="3" height="3" fill="#F472B6" />
@@ -432,10 +430,9 @@
           <rect x="2" y="7" width="2" height="1" fill="#F472B6" />
           <rect x="12" y="7" width="2" height="1" fill="#F472B6" />
           <rect x="5" y="7" width="6" height="4" fill="#F472B6" />
-          <rect x="6" y="8" width="1" height="2" fill="#BE185D" />
-          <rect x="9" y="8" width="1" height="2" fill="#BE185D" />
-          <rect x="4" y="13" width="2" height="2" fill="#F472B6" />
-          <rect x="10" y="13" width="2" height="2" fill="#F472B6" />
+          ${mouth}
+          ${legsAndBelly}
+          ${holdingApple ? `<rect x="7" y="10" width="2" height="2" fill="#EF4444" />` : ''}
         </svg>
       `;
     }
@@ -476,7 +473,7 @@
       `;
     }
 
-    function showToast(message, type = 'info') {
+    function showToast(message) {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
       toast.className = `bg-[#4A3B32] text-white text-xs px-4 py-2.5 rounded-2xl shadow-xl flex items-center gap-2 animate-fadeIn border border-[#D0B8A0]`;
@@ -490,16 +487,35 @@
     }
 
     function cleanDishName(rawHtml) {
-      if (!rawHtml) return [];
-      return rawHtml
-        .replace(/<br\s*\/?>/gi, '\n')
-        .split('\n')
-        .map(dish => dish.replace(/\([0-9\.\s]+\)/g, '').replace(/[0-9\.]+/g, '').trim())
-        .filter(dish => dish.length > 0);
+      if (!rawHtml) return { items: [], allergyInfo: '' };
+      
+      const cleanText = rawHtml.replace(/<br\s*\/?>/gi, '\n');
+      const lines = cleanText.split('\n');
+      
+      const items = [];
+      let allergyInfo = '';
+
+      lines.forEach(line => {
+        const trimmed = line.trim();
+        if (!trimmed) return;
+        
+        const allergyMatch = trimmed.match(/[\(\.]([0-9\.\s]+)[\)\.]?$/);
+        if (allergyMatch) {
+          allergyInfo = allergyMatch[1];
+        }
+
+        const dishName = trimmed.replace(/\([0-9\.\s]+\)/g, '').replace(/[0-9\.]+/g, '').trim();
+        if (dishName.length > 0) {
+          items.push(dishName);
+        }
+      });
+
+      return { items, allergyInfo };
     }
 
     async function fetchSchoolData(school, yearMonthStr) {
       state.isLoading = true;
+      state.hasError = false;
       renderTab();
 
       const year = yearMonthStr.slice(0, 4);
@@ -513,7 +529,8 @@
       const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
 
       try {
-        const mealUrl = `https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&pIndex=1&pSize=100${apiKeyParam}&ATPT_OFCDC_SC_CODE=${school.officeCode}&SD_SCHUL_CODE=${school.code}&MLSV_FROM_YMD=${fromYmd}&MLSV_TO_YMD=${toYmd}`;
+        const weekRange = getThisWeekRange();
+        const mealUrl = `https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&pIndex=1&pSize=10${apiKeyParam}&ATPT_OFCDC_SC_CODE=${school.officeCode}&SD_SCHUL_CODE=${school.code}&MLSV_FROM_YMD=${weekRange.fromYmd}&MLSV_TO_YMD=${weekRange.toYmd}`;
         const mealRes = await fetch(mealUrl);
         const mealData = await mealRes.json();
 
@@ -524,14 +541,15 @@
             const formattedDate = `${rawDD.slice(0,4)}-${rawDD.slice(4,6)}-${rawDD.slice(6,8)}`;
             const dateObj = new Date(formattedDate);
             const dayName = daysOfWeek[dateObj.getDay()] || '';
-            const cleanedItems = cleanDishName(row.DDISH_NM);
+            const cleaned = cleanDishName(row.DDISH_NM);
 
             return {
               day: dayName,
               date: formattedDate,
-              menuTitle: cleanedItems[0] ? cleanedItems[0] : '학교 급식',
+              menuTitle: cleaned.items[0] ? cleaned.items[0] : '학교 급식',
               img: FOOD_IMAGES[idx % FOOD_IMAGES.length],
-              items: cleanedItems,
+              items: cleaned.items,
+              allergy: cleaned.allergyInfo,
               calories: row.CAL_INFO || '정보 없음',
               mealType: row.MMEAL_SC_NM || '중식'
             };
@@ -541,7 +559,8 @@
         }
       } catch (err) {
         console.error('NEIS Meal API Fetch Error:', err);
-        state.meals = [];
+        state.hasError = true;
+        state.errorMessage = '데이터를 불러오지 못했습니다.';
       }
 
       try {
@@ -573,7 +592,6 @@
         }
       } catch (err) {
         console.error('NEIS Schedule API Fetch Error:', err);
-        state.events = [];
       }
 
       state.isLoading = false;
@@ -630,13 +648,17 @@
                 <span class="text-xs text-[#8C6A50] font-medium">${todayStr} (${todayMeal ? todayMeal.day : '오늘'})</span>
               </div>
               <button id="btn-go-meals" class="text-xs text-[#D87A56] font-bold flex items-center hover:underline">
-                이달 전체보기 <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-0.5"></i>
+                주간 급식 전체보기 <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-0.5"></i>
               </button>
             </div>
 
             ${state.isLoading ? `
               <div class="text-center py-8 text-xs text-[#8C7462] animate-pulse">
                 👵 나이스에서 오늘의 급식을 가져오고 있단다...
+              </div>
+            ` : state.hasError ? `
+              <div class="text-center py-6 text-xs text-red-500 bg-[#FAF5ED] rounded-xl border border-[#E8DCD0]">
+                ${state.errorMessage}
               </div>
             ` : todayMeal ? `
               <div class="flex gap-3 items-center">
@@ -651,22 +673,25 @@
                   <ul class="text-xs text-[#6E5A4C] mt-1 space-y-0.5">
                     ${todayMeal.items.slice(0, 4).map(item => `<li class="truncate">• ${item}</li>`).join('')}
                   </ul>
-                  <span class="text-[11px] font-semibold text-[#8A7B6D] bg-[#F5ECE2] px-2 py-0.5 rounded-full inline-block mt-2">
-                    🔥 ${todayMeal.calories}
-                  </span>
+                  <div class="flex items-center gap-2 mt-2">
+                    <span class="text-[11px] font-semibold text-[#8A7B6D] bg-[#F5ECE2] px-2 py-0.5 rounded-full">
+                      🔥 ${todayMeal.calories}
+                    </span>
+                    ${todayMeal.allergy ? `<span class="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">알레르기: ${todayMeal.allergy}</span>` : ''}
+                  </div>
                 </div>
               </div>
             ` : `
               <div class="text-center py-6 text-xs text-[#8C6A50] bg-[#FAF5ED] rounded-xl border border-[#E8DCD0]">
-                오늘(${todayStr})은 등록된 급식 정보가 없단다.<br/>주말이거나 휴업일일 수 있단다! 🏡
+                🍙 급식이 없습니다.
               </div>
             `}
           </div>
 
           <div class="bg-[#FAF3E5] border border-[#E0D0C0] rounded-2xl p-4 shadow-sm flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-14 h-14 bg-[#FFDEE9] border-2 border-[#FFB6C1] rounded-2xl flex items-center justify-center p-2 shadow-sm">
-                ${getPixelPigSvg('w-full h-full', state.pigExpression)}
+              <div class="w-14 h-14 bg-[#FFE4D6] border border-[#D87A56] rounded-2xl flex items-center justify-center p-1 shadow-sm">
+                ${getPixelPigSvg('normal', false, 'w-12 h-12')}
               </div>
               <div>
                 <div class="flex items-center gap-2">
@@ -682,7 +707,7 @@
               </div>
             </div>
             <button id="btn-go-pig" class="bg-[#D87A56] hover:bg-[#C26946] text-white text-xs px-3 py-2 rounded-xl font-bold shadow transition-all active:scale-95 flex-shrink-0">
-              돌보기
+              방문하기
             </button>
           </div>
         </div>
@@ -690,39 +715,30 @@
     }
 
     function renderMealsTab() {
-      const year = state.currentYearMonth.slice(0, 4);
-      const month = parseInt(state.currentYearMonth.slice(4, 6));
-
       return `
         <div class="space-y-4 animate-fadeIn">
           <div class="bg-[#FAF0E6] p-3.5 rounded-2xl border border-[#E8D8C8] flex items-center justify-between">
             <div>
-              <h2 class="font-bold text-base text-[#4A3B32]">${year}년 ${month}월 정성 식단표</h2>
-              <p class="text-xs text-[#8C6A50]">나이스(NEIS) 실시간 연동</p>
+              <h2 class="font-bold text-base text-[#4A3B32]">이번 주 주간 급식 식단표</h2>
+              <p class="text-xs text-[#8C6A50]">월요일부터 금요일까지 정성 가득한 급식</p>
             </div>
             <span class="text-xs bg-[#7C9473] text-white px-2.5 py-1 rounded-lg font-bold max-w-[140px] truncate">
               ${state.selectedSchool.name}
             </span>
           </div>
 
-          <div class="flex items-center justify-between bg-white px-4 py-2.5 rounded-xl border border-[#E2D5C3] text-sm font-bold text-[#4A3B32]">
-            <button id="btn-prev-month-meal" class="p-1 hover:bg-[#FAF3E5] rounded-lg transition-colors flex items-center gap-1 text-xs">
-              <i data-lucide="chevron-left" class="w-4 h-4"></i> 이전 달
-            </button>
-            <span>${year}년 ${month}월</span>
-            <button id="btn-next-month-meal" class="p-1 hover:bg-[#FAF3E5] rounded-lg transition-colors flex items-center gap-1 text-xs">
-              다음 달 <i data-lucide="chevron-right" class="w-4 h-4"></i>
-            </button>
-          </div>
-
           ${state.isLoading ? `
             <div class="bg-white rounded-2xl p-12 text-center text-xs text-[#8C7462] border border-[#E2D5C3] space-y-2">
               <div class="w-8 h-8 border-2 border-[#D87A56] border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <p>나이스(NEIS)에서 이번 달 급식 정보를 끌어오고 있습니다...</p>
+              <p>나이스(NEIS)에서 이번 주 주간 급식 정보를 끌어오고 있습니다...</p>
+            </div>
+          ` : state.hasError ? `
+            <div class="bg-white rounded-2xl p-8 text-center text-xs text-red-500 border border-[#E2D5C3]">
+              ${state.errorMessage}
             </div>
           ` : state.meals.length === 0 ? `
             <div class="bg-white rounded-2xl p-8 text-center text-xs text-[#8C7462] border border-[#E2D5C3]">
-              👵 이번 달에는 나이스에 등록된 급식 정보가 없단다.<br/>방학 기간이거나 학교 일정에 따라 작성되지 않았을 수 있단다.
+              🍙 급식이 없습니다.
             </div>
           ` : `
             <div class="space-y-3.5">
@@ -756,6 +772,7 @@
                             </span>
                           `).join('')}
                         </div>
+                        ${meal.allergy ? `<div class="text-[10px] text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md inline-block mt-1">알레르기 정보: ${meal.allergy}</div>` : ''}
                       </div>
                     </div>
                   </div>
@@ -867,52 +884,85 @@
         <div class="space-y-4 animate-fadeIn">
           <div class="bg-[#FAF0E6] p-3.5 rounded-2xl border border-[#E8D8C8] flex items-center justify-between">
             <div>
-              <h2 class="font-bold text-base text-[#4A3B32]">돼지 키우기 (복돈이)</h2>
-              <p class="text-xs text-[#8C6A50]">맛있는 먹이도 주고 쓰다듬어 주며 키워보자!</p>
+              <h2 class="font-bold text-base text-[#4A3B32]">복돈이의 아늑한 시골 방</h2>
+              <p class="text-xs text-[#8C6A50]">우리 복돈이와 즐거운 시간을 보내보렴!</p>
             </div>
             <span class="text-xs bg-[#D87A56] text-white px-2.5 py-1 rounded-lg font-bold">
               Lv. ${state.pigState.level}
             </span>
           </div>
 
-          <div class="bg-[#F8EFE0] border border-[#E0D0C0] rounded-3xl p-6 text-center space-y-4 relative overflow-hidden shadow-sm min-h-[340px]">
-            <div class="absolute top-3 left-3 bg-white/85 backdrop-blur-sm text-[#5C4535] px-2.5 py-1 rounded-full text-xs font-bold border border-[#E8D8C8]">
-              남은 스낵: 🍎 ${state.pigState.snackCount}개
+          <!-- 시골 할머니집 스타일의 아늑한 방 배경 -->
+          <div class="bg-[#EEDCAE] border-4 border-[#C8A268] rounded-3xl p-5 text-center space-y-4 relative overflow-hidden shadow-inner min-h-[420px] flex flex-col justify-between" style="background-image: linear-gradient(0deg, #E6D0A0 0%, #F5E8C7 100%);">
+            
+            <!-- 방 상단 소품 및 남은 스낵 -->
+            <div class="flex justify-between items-center z-10">
+              <span id="pig-snack-badge" class="bg-[#FAF0E6]/90 backdrop-blur-sm text-[#5C3A21] px-3 py-1 rounded-full text-xs font-bold border border-[#D8A268] shadow-sm">
+                남은 스낵: 🍎 ${state.pigState.snackCount}개
+              </span>
+              <span class="text-xs font-bold text-[#7C5A38] bg-[#FAF0E6]/90 px-3 py-1 rounded-full border border-[#D8A268]">
+                🏠 할머니네 사랑채
+              </span>
             </div>
 
+            <!-- 하트/별/음표/zzz 이펙트 영역 -->
             <div id="pig-effect-area" class="absolute inset-0 pointer-events-none z-30 flex items-center justify-center ${state.showEffect ? '' : 'hidden'}">
               ${state.effectType === 'hearts' ? `
-                <div class="animate-float-1 text-4xl absolute top-10 left-12">💖</div>
-                <div class="animate-float-2 text-5xl absolute top-6 left-1/2 -translate-x-1/2">❤️</div>
-                <div class="animate-float-3 text-4xl absolute top-12 right-12">💕</div>
-              ` : `
-                <div class="animate-float-1 text-4xl absolute top-10 left-12">⭐</div>
-                <div class="animate-float-2 text-5xl absolute top-6 left-1/2 -translate-x-1/2">✨</div>
+                <div class="animate-float-1 text-4xl absolute top-12 left-16">💖</div>
+                <div class="animate-float-2 text-5xl absolute top-8 left-1/2 -translate-x-1/2">❤️</div>
+                <div class="animate-float-3 text-4xl absolute top-12 right-16">💕</div>
+              ` : state.effectType === 'stars' ? `
+                <div class="animate-float-1 text-4xl absolute top-12 left-16">⭐</div>
+                <div class="animate-float-2 text-5xl absolute top-8 left-1/2 -translate-x-1/2">✨</div>
                 <div class="animate-float-3 text-4xl absolute top-12 right-12">🌟</div>
+              ` : state.effectType === 'notes' ? `
+                <div class="animate-float-1 text-3xl absolute top-10 left-16">🎶</div>
+                <div class="animate-float-2 text-4xl absolute top-6 left-1/2 -translate-x-1/2">🎵</div>
+                <div class="animate-float-3 text-3xl absolute top-12 right-16">🎼</div>
+              ` : `
+                <div class="animate-float-1 text-3xl absolute top-10 left-1/3">💤</div>
+                <div class="animate-float-2 text-4xl absolute top-6 right-1/3">💤</div>
               `}
             </div>
 
-            <div class="py-6 flex justify-center relative">
-              <div class="w-36 h-36 bg-[#FFDEE9] rounded-full border-4 border-[#FFB6C1] shadow-lg flex items-center justify-center p-4 relative animate-bounce" style="animation-duration: 2s;">
-                ${getPixelPigSvg('w-full h-full', state.pigExpression)}
-                <div class="absolute -bottom-1 bg-[#D87A56] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow">
-                  ${state.pigState.name}
+            <!-- 말풍선 및 오리지널 픽셀 복돈이 캐릭터 (큼직하게 렌더링) -->
+            <div class="flex flex-col items-center justify-center my-auto relative z-20">
+              <!-- 말풍선 -->
+              <div id="pig-speech-bubble" class="bg-white border-2 border-[#D87A56] text-[#4A3B32] text-xs font-bold px-4 py-2 rounded-2xl shadow-md mb-3 max-w-[260px] relative animate-fadeIn transition-all">
+                "<span id="pig-speech-text">${state.pigSpeech}</span>"
+                <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b-2 border-r-2 border-[#D87A56] rotate-45"></div>
+              </div>
+
+              <!-- 오리지널 귀여운 픽셀 복돈이 캐릭터 본체 (크기 확대) -->
+              <div id="btn-click-pig" class="cursor-pointer transition-transform hover:scale-110 active:scale-95 p-2 relative group">
+                <div class="flex flex-col items-center" id="pig-svg-container">
+                  ${getPixelPigSvg(state.pigExpression, state.pigHoldingApple, "w-32 h-32")}
+                  <div class="mt-2 bg-[#8B5A2B] text-white text-[11px] font-extrabold px-3 py-0.5 rounded-full shadow border border-[#D8A268]">
+                    ${state.pigState.name}
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="bg-white border border-[#E0D0C0] p-3 rounded-2xl text-xs font-bold text-[#5C4535] shadow-sm">
-              "${state.pigState.quote}"
+            <!-- 하단 5가지 인터랙션 버튼 -->
+            <div class="grid grid-cols-3 gap-2 pt-2 z-10">
+              <button id="btn-feed-pig" class="bg-[#D87A56] hover:bg-[#C26946] text-white py-2.5 px-2 rounded-2xl font-bold text-xs shadow transition-all active:scale-95 flex items-center justify-center gap-1">
+                🍎 먹이주기
+              </button>
+              <button id="btn-pet-pig" class="bg-[#8A9A86] hover:bg-[#788874] text-white py-2.5 px-2 rounded-2xl font-bold text-xs shadow transition-all active:scale-95 flex items-center justify-center gap-1">
+                🤚 쓰다듬기
+              </button>
+              <button id="btn-dance-pig" class="bg-[#D97706] hover:bg-[#B45309] text-white py-2.5 px-2 rounded-2xl font-bold text-xs shadow transition-all active:scale-95 flex items-center justify-center gap-1">
+                💃 춤추기
+              </button>
+              <button id="btn-sleep-pig" class="bg-[#6366F1] hover:bg-[#4F46E5] text-white py-2.5 px-2 rounded-2xl font-bold text-xs shadow transition-all active:scale-95 flex items-center justify-center gap-1">
+                💤 낮잠자기
+              </button>
+              <button id="btn-aegyo-pig" class="bg-[#EC4899] hover:bg-[#DB2777] text-white py-2.5 px-2 col-span-2 rounded-2xl font-bold text-xs shadow transition-all active:scale-95 flex items-center justify-center gap-1">
+                ✨ 애교부리기
+              </button>
             </div>
 
-            <div class="grid grid-cols-2 gap-3 pt-2">
-              <button id="btn-feed-pig" class="bg-[#D87A56] hover:bg-[#C26946] text-white p-3 rounded-2xl font-bold text-xs shadow transition-all active:scale-95 flex items-center justify-center gap-1">
-                🍎 먹이주기 (-1 스낵)
-              </button>
-              <button id="btn-pet-pig" class="bg-[#8A9A86] hover:bg-[#788874] text-white p-3 rounded-2xl font-bold text-xs shadow transition-all active:scale-95 flex items-center justify-center gap-1">
-                🤚 쓰다듬기 (별 팡팡)
-              </button>
-            </div>
           </div>
         </div>
       `;
@@ -974,30 +1024,69 @@
       `;
     }
 
-    function attachTabEvents() {
-      // Sound Toggle Button
-      const soundToggleBtn = document.getElementById('btn-sound-toggle');
-      const soundIcon = document.getElementById('sound-icon');
-      if (soundToggleBtn) {
-        soundToggleBtn.addEventListener('click', () => {
-          soundEnabled = !soundEnabled;
-          if (soundEnabled) {
-            soundToggleBtn.classList.remove('bg-[#D87A56]', 'text-white');
-            soundToggleBtn.classList.add('bg-[#F5E6D3]', 'text-[#5C3A21]');
-            if (soundIcon) soundIcon.setAttribute('data-lucide', 'volume-2');
-            showToast('🔊 효과음이 켜졌습니다.');
+    // 화면 깜빡임 없이 부드럽게 복돈이 상태만 즉시 업데이트하는 헬퍼 함수
+    function updatePigUI() {
+      const speechText = document.getElementById('pig-speech-text');
+      if (speechText) speechText.textContent = state.pigSpeech;
+
+      const svgContainer = document.getElementById('pig-svg-container');
+      if (svgContainer) {
+        svgContainer.innerHTML = `
+          ${getPixelPigSvg(state.pigExpression, state.pigHoldingApple, "w-32 h-32")}
+          <div class="mt-2 bg-[#8B5A2B] text-white text-[11px] font-extrabold px-3 py-0.5 rounded-full shadow border border-[#D8A268]">
+            ${state.pigState.name}
+          </div>
+        `;
+      }
+
+      const effectArea = document.getElementById('pig-effect-area');
+      if (effectArea) {
+        if (state.showEffect) {
+          effectArea.classList.remove('hidden');
+          if (state.effectType === 'hearts') {
+            effectArea.innerHTML = `
+              <div class="animate-float-1 text-4xl absolute top-12 left-16">💖</div>
+              <div class="animate-float-2 text-5xl absolute top-8 left-1/2 -translate-x-1/2">❤️</div>
+              <div class="animate-float-3 text-4xl absolute top-12 right-16">💕</div>
+            `;
+          } else if (state.effectType === 'stars') {
+            effectArea.innerHTML = `
+              <div class="animate-float-1 text-4xl absolute top-12 left-16">⭐</div>
+              <div class="animate-float-2 text-5xl absolute top-8 left-1/2 -translate-x-1/2">✨</div>
+              <div class="animate-float-3 text-4xl absolute top-12 right-12">🌟</div>
+            `;
+          } else if (state.effectType === 'notes') {
+            effectArea.innerHTML = `
+              <div class="animate-float-1 text-3xl absolute top-10 left-16">🎶</div>
+              <div class="animate-float-2 text-4xl absolute top-6 left-1/2 -translate-x-1/2">🎵</div>
+              <div class="animate-float-3 text-3xl absolute top-12 right-16">🎼</div>
+            `;
           } else {
-            soundToggleBtn.classList.remove('bg-[#F5E6D3]', 'text-[#5C3A21]');
-            soundToggleBtn.classList.add('bg-[#D87A56]', 'text-white');
-            if (soundIcon) soundIcon.setAttribute('data-lucide', 'volume-x');
-            showToast('🔇 효과음이 꺼졌습니다.');
+            effectArea.innerHTML = `
+              <div class="animate-float-1 text-3xl absolute top-10 left-1/3">💤</div>
+              <div class="animate-float-2 text-4xl absolute top-6 right-1/3">💤</div>
+            `;
           }
-          lucide.createIcons();
-          playSound('click');
+        } else {
+          effectArea.classList.add('hidden');
+        }
+      }
+
+      const snackBadge = document.getElementById('pig-snack-badge');
+      if (snackBadge) {
+        snackBadge.textContent = `남은 스낵: 🍎 ${state.pigState.snackCount}개`;
+      }
+    }
+
+    function attachTabEvents() {
+      const btnRefresh = document.getElementById('btn-refresh');
+      if (btnRefresh) {
+        btnRefresh.addEventListener('click', () => {
+          showToast('🔄 데이터를 새로고침합니다.');
+          fetchSchoolData(state.selectedSchool, state.currentYearMonth);
         });
       }
 
-      // Home Tab Events
       const btnCheckin = document.getElementById('btn-checkin');
       if (btnCheckin) {
         btnCheckin.addEventListener('click', () => {
@@ -1005,7 +1094,6 @@
           state.hasCheckedIn = true;
           state.pigState.snackCount += 2;
           state.pigState.quote = '출석 보상으로 맛있는 스낵 2개를 받았단다! 꿀꿀!';
-          playSound('checkin');
           showToast('🎁 출석 완료! 스낵 2개가 추가되었습니다.');
           renderTab();
         });
@@ -1014,7 +1102,6 @@
       const btnGoMeals = document.getElementById('btn-go-meals');
       if (btnGoMeals) {
         btnGoMeals.addEventListener('click', () => {
-          playSound('click');
           switchTab('meals');
         });
       }
@@ -1022,27 +1109,39 @@
       const btnGoPig = document.getElementById('btn-go-pig');
       if (btnGoPig) {
         btnGoPig.addEventListener('click', () => {
-          playSound('click');
           switchTab('pig');
         });
       }
 
-      const btnPrevMeal = document.getElementById('btn-prev-month-meal');
-      const btnNextMeal = document.getElementById('btn-next-month-meal');
-      if (btnPrevMeal) btnPrevMeal.addEventListener('click', () => { playSound('click'); changeMonth(-1); });
-      if (btnNextMeal) btnNextMeal.addEventListener('click', () => { playSound('click'); changeMonth(1); });
-
       const btnPrevCal = document.getElementById('btn-prev-month-cal');
       const btnNextCal = document.getElementById('btn-next-month-cal');
-      if (btnPrevCal) btnPrevCal.addEventListener('click', () => { playSound('click'); changeMonth(-1); });
-      if (btnNextCal) btnNextCal.addEventListener('click', () => { playSound('click'); changeMonth(1); });
+      if (btnPrevCal) btnPrevCal.addEventListener('click', () => { changeMonth(-1); });
+      if (btnNextCal) btnNextCal.addEventListener('click', () => { changeMonth(1); });
 
-      // Pig Feed Event
+      // 복돈이 직접 터치 시 대사 변경
+      const btnClickPig = document.getElementById('btn-click-pig');
+      if (btnClickPig) {
+        btnClickPig.addEventListener('click', () => {
+          const cuteQuotes = [
+            '꿀꿀! 오늘도 너랑 놀아서 정말 즐거워~ 🐷',
+            '배고프니까 사과 스낵 하나 주면 안 될까? 🍎',
+            '할머니가 만들어주신 누룽지가 먹고 싶어라~',
+            '내 이름은 복돈이! 복을 불러오는 아기 돼지야 ✨',
+            '헤헤, 쓰다듬어 주니까 기분이 너무 좋다쿠! 💕'
+          ];
+          state.pigSpeech = cuteQuotes[Math.floor(Math.random() * cuteQuotes.length)];
+          state.pigExpression = 'normal';
+          state.pigHoldingApple = false;
+          state.showEffect = false;
+          updatePigUI();
+        });
+      }
+
+      // 1. 먹이주기 버튼 (최소 2번 통통 튀는 애니메이션)
       const btnFeed = document.getElementById('btn-feed-pig');
       if (btnFeed) {
         btnFeed.addEventListener('click', () => {
           if (state.pigState.snackCount <= 0) {
-            playSound('click');
             showToast('🍎 스낵이 부족합니다! 출석체크나 할머니와 수다를 떨어보세요!');
             return;
           }
@@ -1055,47 +1154,142 @@
             state.pigState.level++;
             state.pigState.exp %= state.pigState.maxExp;
             state.pigState.maxExp += 50;
-            state.pigState.quote = '축하한다! 복돈이가 쑥쑥 자라 레벨업을 했단다!';
+            state.pigSpeech = '우와! 레벨업을 했어! 사과 냠냠 꿀맛이야! 🏆';
           } else {
-            state.pigState.quote = '꿀꿀! 맛있는 먹이를 냠냠 먹고 눈에서 하트가 뿅뿅~❤️!';
+            state.pigSpeech = '냠냠쩝쩝! 사과 스낵 정말 달콤하고 맛있어! 🍎';
           }
 
-          playSound('feed');
           state.showEffect = true;
           state.effectType = 'hearts';
           state.pigExpression = 'heart';
-          renderTab();
+          state.pigHoldingApple = true;
+          
+          const svgContainer = document.getElementById('pig-svg-container');
+          if (svgContainer) {
+            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up');
+            void svgContainer.offsetWidth;
+            svgContainer.classList.add('animate-double-bounce');
+          }
+
+          updatePigUI();
 
           setTimeout(() => {
             state.showEffect = false;
             state.pigExpression = 'normal';
-            renderTab();
+            state.pigHoldingApple = false;
+            updatePigUI();
           }, 2000);
         });
       }
 
-      // Pig Pet Event
+      // 2. 쓰다듬기 버튼 (강아지처럼 발라당 배를 보이며 눕는 모션 + 별)
       const btnPet = document.getElementById('btn-pet-pig');
       if (btnPet) {
         btnPet.addEventListener('click', () => {
           state.pigState.happiness = Math.min(100, state.pigState.happiness + 15);
-          state.pigState.quote = '쓰다듬어주니 신나서 눈이 반짝반짝 별이 떴단다! ⭐✨';
+          state.pigSpeech = '발라당~ 간지러워요! 내 배를 쓰다듬어주세요 쿠키~ 🐾✨';
           
-          playSound('pet');
           state.showEffect = true;
           state.effectType = 'stars';
-          state.pigExpression = 'star';
-          renderTab();
+          state.pigExpression = 'belly';
+          state.pigHoldingApple = false;
+
+          const svgContainer = document.getElementById('pig-svg-container');
+          if (svgContainer) {
+            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up');
+            void svgContainer.offsetWidth;
+            svgContainer.classList.add('animate-belly-up');
+          }
+
+          updatePigUI();
 
           setTimeout(() => {
             state.showEffect = false;
             state.pigExpression = 'normal';
-            renderTab();
+            updatePigUI();
           }, 2000);
         });
       }
 
-      // Chat Events
+      // 3. 춤추기 버튼 (좌우로 흔들며 통통 튀기)
+      const btnDance = document.getElementById('btn-dance-pig');
+      if (btnDance) {
+        btnDance.addEventListener('click', () => {
+          state.pigState.happiness = Math.min(100, state.pigState.happiness + 20);
+          state.pigSpeech = '신나는 시골 댄스 타임! 덩실덩실 엉덩이 씰룩씰룩~ 🎵';
+          
+          state.showEffect = true;
+          state.effectType = 'notes';
+          state.pigExpression = 'dance';
+          state.pigHoldingApple = false;
+
+          const svgContainer = document.getElementById('pig-svg-container');
+          if (svgContainer) {
+            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up');
+            void svgContainer.offsetWidth;
+            svgContainer.classList.add('animate-wiggle-jump');
+          }
+
+          updatePigUI();
+
+          setTimeout(() => {
+            state.showEffect = false;
+            state.pigExpression = 'normal';
+            updatePigUI();
+          }, 2500);
+        });
+      }
+
+      // 4. 낮잠자기 버튼
+      const btnSleep = document.getElementById('btn-sleep-pig');
+      if (btnSleep) {
+        btnSleep.addEventListener('click', () => {
+          state.pigState.hunger = Math.min(100, state.pigState.hunger + 5);
+          state.pigSpeech = '쿨쿨... 따뜻한 마루바닥에서 낮잠 자는 중이에요... zzz 💤';
+          
+          state.showEffect = true;
+          state.effectType = 'sleep';
+          state.pigExpression = 'sleep';
+          state.pigHoldingApple = false;
+          updatePigUI();
+
+          setTimeout(() => {
+            state.showEffect = false;
+            state.pigExpression = 'normal';
+            updatePigUI();
+          }, 2500);
+        });
+      }
+
+      // 5. 애교부리기 버튼 (좌우로 흔들며 애교)
+      const btnAegyo = document.getElementById('btn-aegyo-pig');
+      if (btnAegyo) {
+        btnAegyo.addEventListener('click', () => {
+          state.pigState.happiness = Math.min(100, state.pigState.happiness + 25);
+          state.pigSpeech = '쪽~ 3 뽀뽀! 우리 주인님 최고 사랑해요! 💕';
+          
+          state.showEffect = true;
+          state.effectType = 'hearts';
+          state.pigExpression = 'kiss';
+          state.pigHoldingApple = false;
+
+          const svgContainer = document.getElementById('pig-svg-container');
+          if (svgContainer) {
+            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up');
+            void svgContainer.offsetWidth;
+            svgContainer.classList.add('animate-wiggle-jump');
+          }
+
+          updatePigUI();
+
+          setTimeout(() => {
+            state.showEffect = false;
+            state.pigExpression = 'normal';
+            updatePigUI();
+          }, 2000);
+        });
+      }
+
       const btnSendChat = document.getElementById('btn-send-chat');
       const chatInput = document.getElementById('chat-input-text');
       if (btnSendChat && chatInput) {
@@ -1103,7 +1297,6 @@
           const val = chatInput.value.trim();
           if (!val || state.isChatTyping) return;
 
-          playSound('send');
           state.chatMessages.push({ id: Date.now(), sender: 'user', text: val });
           chatInput.value = '';
           state.isChatTyping = true;
@@ -1145,26 +1338,28 @@
         : '오늘 급식: 정보 없음';
 
       const upcomingMealsText = state.meals.length > 0 
-        ? state.meals.slice(0, 5).map(m => `[${m.date}(${m.day})]: ${m.items.slice(0, 4).join(', ')}`).join('\n')
-        : '이번 달 급식 정보 없음';
+        ? state.meals.map(m => `[${m.date}(${m.day})]: ${m.items.join(', ')}`).join('\n')
+        : '이번 주 급식 정보 없음';
 
       const eventsText = state.events.length > 0
         ? state.events.map(e => `[${e.date}]: ${e.title} (${e.type})`).join('\n')
         : '이번 달 학사일정 정보 없음';
 
+      // 할머니 AI 시스템 프롬프트: 일정 질문 시 상세히 답변하도록 프롬프트 보강
       const systemPrompt = `당신은 시골 한옥집에 사는 다정하고 따뜻한 '시골 할머니'입니다. 
-말투는 항상 한국 시골 할머니의 정감 어린 구수한 어조(~했단다, ~했냐?, 오냐 우리 강아지, 밥은 먹고 다니냐 등)를 유지하세요.
+말투는 항상 한국 시골 할머니의 정감 어린 구수한 어조(~했단다, ~했냐?, 오냐 우리 강아지, 밥은 먹고 다니냐, 할미가 있잖냐 등)를 유지하세요.
 사용자가 선택한 학교는 [${state.selectedSchool.name}]입니다.
 
-[급식 정보]
-${mealInfoText}
-[이번 달 급식 정보 요약]
+규칙:
+1. 사용자가 학사일정, 행사, 시험, 방학, 일정 등을 물어보면 아래 [이번 달 학사일정] 데이터를 정확하고 상세하게 찾아서 다정하게 알려주세요.
+2. 사용자가 급식 메뉴를 물어보면 [이번 주 급식 정보]를 바탕으로 알려주세요.
+3. 그 외 일상적인 대화나 수다를 떨 때는 날씨, 시골 생활, 간식 등 다양한 주제로 새롭고 풍성하게 대답해주세요.
+
+[이번 주 급식 정보]
 ${upcomingMealsText}
 
 [이번 달 학사일정]
-${eventsText}
-
-사용자가 급식 메뉴나 학교 일정에 대해 물어보면 위 실제 데이터를 바탕으로 다정하게 알려주세요.`;
+${eventsText}`;
 
       let replyText = '';
 
@@ -1200,17 +1395,23 @@ ${eventsText}
             const nextMeal = state.meals[0];
             replyText = `오늘(${todayStr})은 급식 정보가 없지만, 다가오는 ${nextMeal.date}(${nextMeal.day}) 급식 메뉴는 **${nextMeal.items.join(', ')}** 이란다!`;
           } else {
-            replyText = `아이고, 이번 달 ${state.selectedSchool.name} 급식 정보가 나이스에 등록되어 있지 않거나 방학 기간인 것 같구나. 집에서 할미랑 든든하게 먹자꾸나!`;
+            replyText = `아이고, 이번 주 ${state.selectedSchool.name} 주간 급식 정보가 나이스에 등록되어 있지 않거나 방학 기간인 것 같구나. 집에서 할미랑 든든하게 먹자꾸나!`;
           }
         } else if (lower.includes('일정') || lower.includes('학사') || lower.includes('행사') || lower.includes('시험') || lower.includes('방학') || lower.includes('달력')) {
           if (state.events.length > 0) {
-            const eventListStr = state.events.slice(0, 5).map(e => `• ${e.date.slice(5)} : ${e.title}`).join('\n');
-            replyText = `오냐! 이번 달 ${state.selectedSchool.name} 주요 학사일정을 할미가 알려주마!\n\n${eventListStr}\n\n열심히 공부하고 준비 잘 하거라, 우리 강아지!`;
+            const eventListStr = state.events.map(e => `• ${e.date} (${e.type}) : ${e.title}`).join('\n');
+            replyText = `오냐! 이번 달 ${state.selectedSchool.name} 학사일정을 할미가 꼼꼼히 찾아보았단다!\n\n${eventListStr}\n\n일정 확인해서 준비 잘 하거라, 우리 강아지!`;
           } else {
             replyText = `이번 달에는 나이스에 따로 등록된 특별한 학교 행사나 시험 일정이 없단다! 평소처럼 즐겁게 학교 다니려무나~`;
           }
         } else {
-          replyText = `오냐 우리 강아지~ ${state.selectedSchool.name} 다니느라 고생이 많구나! 밥은 꼭 챙겨먹고 건강하거라~ 궁금한 급식이나 학교 일정이 있으면 언제든 할미한테 물어보렴!`;
+          const randomChatReplies = [
+            `오냐 우리 강아지~ 할미는 오늘 마당에 널어둔 고추를 말리며 하루를 보내고 있었단다. 넌 오늘 하루 학교에서 무슨 재밌는 일 없었냐?`,
+            `아이고 내 새끼 왔는가! 할미가 아까 가마솥에 감자를 맛있게 쪄 놨는데 얼른 와서 한 개 집어먹으렴. 공부하느라 머리 아프지 않지?`,
+            `어휴, 우리 강아지 얼굴 보니 또 키가 훌쩍 컸네! 학교생활 힘들진 않고? 친구들이랑 사이좋게 잘 지내고 있지?`,
+            `오냐~ 할미는 네가 이렇게 찾아와서 수다 떨어줄 때가 제일 행복하다니까. 궁금한 거 있으면 언제든 편하게 물어보렴!`
+          ];
+          replyText = randomChatReplies[Math.floor(Math.random() * randomChatReplies.length)];
         }
       }
 
@@ -1219,7 +1420,6 @@ ${eventsText}
 
       if (Math.random() > 0.4) {
         state.pigState.snackCount++;
-        playSound('coin');
         showToast('🍎 할머니와 대화하여 스낵 1개를 선물받았습니다!');
       }
 
@@ -1282,16 +1482,13 @@ ${eventsText}
       const modalApi = document.getElementById('modal-api');
 
       document.getElementById('btn-open-school')?.addEventListener('click', () => {
-        playSound('click');
         modalSchool.classList.remove('hidden');
       });
       document.getElementById('btn-close-school')?.addEventListener('click', () => {
-        playSound('click');
         modalSchool.classList.add('hidden');
       });
 
       document.getElementById('btn-open-api')?.addEventListener('click', () => {
-        playSound('click');
         const neisKeyInput = document.getElementById('neis-key-input');
         const geminiKeyInput = document.getElementById('gemini-key-input');
         if (neisKeyInput) neisKeyInput.value = state.neisApiKey;
@@ -1299,12 +1496,10 @@ ${eventsText}
         modalApi.classList.remove('hidden');
       });
       document.getElementById('btn-close-api')?.addEventListener('click', () => {
-        playSound('click');
         modalApi.classList.add('hidden');
       });
 
       document.getElementById('btn-save-api')?.addEventListener('click', () => {
-        playSound('coin');
         const neisKeyInput = document.getElementById('neis-key-input');
         const geminiKeyInput = document.getElementById('gemini-key-input');
         if (neisKeyInput) {
@@ -1325,7 +1520,6 @@ ${eventsText}
       const schoolResultsContainer = document.getElementById('school-search-results');
 
       const executeSchoolSearch = async () => {
-        playSound('click');
         const query = schoolQueryInput.value.trim();
         if (!query) return;
 
@@ -1351,11 +1545,11 @@ ${eventsText}
 
             renderSchoolSearchResults(list);
           } else {
-            schoolResultsContainer.innerHTML = `<div class="text-center py-6 text-xs text-[#8C7462]">검색 결과가 없습니다. 학교 이름을 다시 확인해 보세요.</div>`;
+            schoolResultsContainer.innerHTML = `<div class="text-center py-6 text-xs text-red-500">학교를 찾을 수 없어요 🥲</div>`;
           }
         } catch (err) {
           console.error('School Search Error:', err);
-          schoolResultsContainer.innerHTML = `<div class="text-center py-6 text-xs text-red-500">학교 검색 중 오류가 발생했습니다.</div>`;
+          schoolResultsContainer.innerHTML = `<div class="text-center py-6 text-xs text-red-500">학교를 찾을 수 없어요 🥲</div>`;
         }
       };
 
@@ -1374,7 +1568,6 @@ ${eventsText}
 
         document.querySelectorAll('.btn-select-school').forEach((btn) => {
           btn.addEventListener('click', () => {
-            playSound('click');
             const idx = parseInt(btn.dataset.index);
             const chosen = results[idx];
             state.selectedSchool = chosen;
@@ -1398,7 +1591,6 @@ ${eventsText}
 
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-          playSound('click');
           switchTab(btn.dataset.tab);
         });
       });
