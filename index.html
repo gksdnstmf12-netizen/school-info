@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>할머니네 집 - 급식과 픽셀 펫</title>
+  <title>할머니네 집 - 급식과 픽셀 펫 복돈이</title>
   
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -41,7 +41,17 @@
     .animate-float-2 { animation: floatUp 1.4s ease-out 0.2s forwards; }
     .animate-float-3 { animation: floatUp 1.3s ease-out 0.1s forwards; }
 
-    /* 최소 2번 통통 튀는 애니메이션 */
+    /* 방귀 애니메이션 */
+    @keyframes fartShake {
+      0%, 100% { transform: scale(1) rotate(0deg); }
+      20% { transform: scale(1.15) rotate(-10deg) translateY(-4px); }
+      40% { transform: scale(1.2) rotate(12deg) translateY(-8px); }
+      60% { transform: scale(1.1) rotate(-8deg); }
+      80% { transform: scale(1.05) rotate(5deg); }
+    }
+    .animate-fart { animation: fartShake 0.8s ease-in-out; }
+
+    /* 통통 튀는 애니메이션 */
     @keyframes doubleBounce {
       0%, 100% { transform: translateY(0); }
       25% { transform: translateY(-16px); }
@@ -50,7 +60,7 @@
     }
     .animate-double-bounce { animation: doubleBounce 0.6s ease-in-out; }
 
-    /* 좌우로 흔들며 통통 튀는 춤/애교 애니메이션 */
+    /* 춤/애교 애니메이션 */
     @keyframes wiggleJump {
       0%, 100% { transform: translateY(0) rotate(0deg); }
       20% { transform: translateY(-12px) rotate(-8deg); }
@@ -60,7 +70,7 @@
     }
     .animate-wiggle-jump { animation: wiggleJump 0.7s ease-in-out; }
 
-    /* 쓰다듬을 때 배를 발라당 뒤집는(눕는) 애니메이션 */
+    /* 배 뒤집기 애니메이션 */
     @keyframes bellyUp {
       0% { transform: scale(1) rotate(0deg); }
       50% { transform: scale(1.1) rotate(15deg) translateY(-8px); }
@@ -115,12 +125,6 @@
             <rect x="5" y="14" width="2" height="5" fill="#9F1239" />
             <rect x="13" y="14" width="2" height="5" fill="#9F1239" />
             <rect x="7" y="14" width="6" height="5" fill="#FEF3C7" />
-            <rect x="5" y="13" width="1" height="1" fill="#FDE047" />
-            <rect x="14" y="13" width="1" height="1" fill="#FDE047" />
-            <rect x="4" y="16" width="1" height="1" fill="#F472B6" />
-            <rect x="15" y="16" width="1" height="1" fill="#F472B6" />
-            <rect x="5" y="18" width="1" height="1" fill="#FDE047" />
-            <rect x="14" y="18" width="1" height="1" fill="#FDE047" />
           </svg>
         </div>
         <div>
@@ -211,6 +215,61 @@
       </div>
     </div>
 
+    <!-- MODAL: CLOSET (복돈이 드레스룸 꾸미기) -->
+    <div id="modal-closet" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-fadeIn">
+      <div class="bg-[#FFFDF9] border-2 border-[#C8A268] rounded-3xl w-full max-w-sm p-4 space-y-3 shadow-2xl relative max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center border-b border-[#EADBC8] pb-2">
+          <h3 class="font-extrabold text-base text-[#5C3A21] flex items-center gap-1.5">
+            👕 복돈이의 옷장 (드레스룸)
+          </h3>
+          <button id="btn-close-closet" class="text-[#8C6A50] hover:text-[#4A3B32] p-1 rounded-full bg-[#FAF3E5]">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- 드레스룸 프리뷰 쇼케이스 -->
+        <div class="bg-[#F8EED8] border-2 border-[#D8A268] rounded-2xl p-3 flex flex-col items-center justify-center relative shadow-inner">
+          <span class="text-[10px] text-[#8C6A50] bg-white/80 px-2.5 py-0.5 rounded-full font-bold mb-1">
+            현재 착장 모습
+          </span>
+          <div id="closet-preview-pig" class="w-28 h-28 flex items-center justify-center">
+            <!-- Dynamic Preview Pig SVG -->
+          </div>
+        </div>
+
+        <!-- 카테고리 탭 -->
+        <div class="flex border-b border-[#E0D0C0] gap-1 pt-1">
+          <button data-closet-tab="hat" class="closet-tab-btn flex-1 py-1.5 text-center text-xs font-bold rounded-t-lg bg-[#D87A56] text-white">
+            👒 모자
+          </button>
+          <button data-closet-tab="necklace" class="closet-tab-btn flex-1 py-1.5 text-center text-xs font-bold rounded-t-lg bg-[#EFE3D3] text-[#7C5A38]">
+            📿 목걸이
+          </button>
+          <button data-closet-tab="pin" class="closet-tab-btn flex-1 py-1.5 text-center text-xs font-bold rounded-t-lg bg-[#EFE3D3] text-[#7C5A38]">
+            🎀 삔
+          </button>
+          <button data-closet-tab="face" class="closet-tab-btn flex-1 py-1.5 text-center text-xs font-bold rounded-t-lg bg-[#EFE3D3] text-[#7C5A38]">
+            🎨 얼굴
+          </button>
+        </div>
+
+        <!-- 아이템 그리드 (각 10종) -->
+        <div id="closet-items-grid" class="flex-1 overflow-y-auto grid grid-cols-2 gap-2 p-1 min-h-[160px]">
+          <!-- JS dynamic generation -->
+        </div>
+
+        <!-- 하단 초기화 및 저장 버튼 -->
+        <div class="pt-2 border-t border-[#EADBC8] flex gap-2">
+          <button id="btn-reset-closet" class="flex-1 bg-[#E2D5C3] hover:bg-[#D5C6B2] text-[#5C3A21] py-2 rounded-xl text-xs font-bold transition-all active:scale-95">
+            처음으로 (초기화)
+          </button>
+          <button id="btn-save-closet" class="flex-1 bg-[#D87A56] hover:bg-[#C26946] text-white py-2 rounded-xl text-xs font-bold transition-all active:scale-95 shadow">
+            저장하고 나가기
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL: API & SETTINGS -->
     <div id="modal-api" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-fadeIn">
       <div class="bg-[#FAF5ED] border border-[#E0D0C0] rounded-3xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative">
@@ -287,6 +346,58 @@
       'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80'
     ];
 
+    // 복돈이 꾸미기 액세서리 데이터 (각 10종씩)
+    const ACCESSORIES = {
+      hat: [
+        { id: 'hat_straw', name: '밀짚모자', icon: '👒' },
+        { id: 'hat_party', name: '꼬깔모자', icon: '🎉' },
+        { id: 'hat_grad', name: '학사모', icon: '🎓' },
+        { id: 'hat_ribbon', name: '리본 캡', icon: '🧢' },
+        { id: 'hat_wizard', name: '마법사모', icon: '🧙' },
+        { id: 'hat_crown', name: '왕관', icon: '👑' },
+        { id: 'hat_frog', name: '개구리 모자', icon: '🐸' },
+        { id: 'hat_bear', name: '곰돌이 모자', icon: '🐻' },
+        { id: 'hat_rural', name: '시골 두건', icon: '👵' },
+        { id: 'hat_chef', name: '요리사모', icon: '👨‍🍳' }
+      ],
+      necklace: [
+        { id: 'neck_pearl', name: '진주 목걸이', icon: '📿' },
+        { id: 'neck_gold', name: '금목걸이', icon: '🥇' },
+        { id: 'neck_heart', name: '하트 팬던트', icon: '💖' },
+        { id: 'neck_bowtie', name: '나비넥타이', icon: '🦋' },
+        { id: 'neck_bell', name: '방울 목걸이', icon: '🔔' },
+        { id: 'neck_scarf', name: '스카프', icon: '🧣' },
+        { id: 'neck_flower', name: '꽃 목걸이', icon: '🌸' },
+        { id: 'neck_bone', name: '뼈다귀 목걸이', icon: '🦴' },
+        { id: 'neck_feather', name: '천사 깃털넥', icon: '🪶' },
+        { id: 'neck_magic', name: '마법 목걸이', icon: '🔮' }
+      ],
+      pin: [
+        { id: 'pin_red_ribbon', name: '빨간 리본삔', icon: '🎀' },
+        { id: 'pin_star', name: '별삔', icon: '⭐' },
+        { id: 'pin_sprout', name: '새싹삔', icon: '🌱' },
+        { id: 'pin_cherry', name: '체리삔', icon: '🍒' },
+        { id: 'pin_heart', name: '하트삔', icon: '💕' },
+        { id: 'pin_clover', name: '클로버삔', icon: '🍀' },
+        { id: 'pin_eyes', name: '왕눈이삔', icon: '👀' },
+        { id: 'pin_feather', name: '깃털삔', icon: '🪶' },
+        { id: 'pin_sparkle', name: '반짝이삔', icon: '✨' },
+        { id: 'pin_carrot', name: '당근삔', icon: '🥕' }
+      ],
+      face: [
+        { id: 'face_heart_blush', name: '하트 볼터치', icon: '💕' },
+        { id: 'face_pink_blush', name: '연분홍 볼터치', icon: '🌸' },
+        { id: 'face_cat_whisker', name: '고양이 수염', icon: '🐱' },
+        { id: 'face_gentle_stache', name: '신사 수염', icon: '🥸' },
+        { id: 'face_doodle', name: '볼 낙서', icon: '✏️' },
+        { id: 'face_swirl', name: '소용돌이 볼', icon: '🌀' },
+        { id: 'face_glasses', name: '안경 낙서', icon: '👓' },
+        { id: 'face_tear', name: '눈물 찔끔', icon: '💧' },
+        { id: 'face_bandaid', name: '볼 반창고', icon: '🩹' },
+        { id: 'face_cat_nose', name: '고양이 코', icon: '🐾' }
+      ]
+    };
+
     const todayObj = new Date();
     const todayYYYY = todayObj.getFullYear();
     const todayMM = String(todayObj.getMonth() + 1).padStart(2, '0');
@@ -318,6 +429,7 @@
 
     const state = {
       activeTab: 'home',
+      activeClosetTab: 'hat',
       hasCheckedIn: false,
       officeCode: 'B10',
       selectedSchool: JSON.parse(localStorage.getItem('selected_school') || JSON.stringify({
@@ -338,8 +450,21 @@
       effectType: 'hearts',
       pigExpression: 'normal',
       pigHoldingApple: false,
-      pigActionClass: '',
-      pigSpeech: '꿀쭏! 오늘도 기분이 아주 좋단다~ 🐷',
+      pigSpeech: '꿀꿀! 오늘도 기분이 아주 좋단다~ 🐷',
+      pigClickCount: 0,
+      pigClickTimer: null,
+      isFarting: false,
+      
+      // 저장된 착장 아이템
+      equippedItems: JSON.parse(localStorage.getItem('pig_equipped') || JSON.stringify({
+        hat: null,
+        necklace: null,
+        pin: null,
+        face: null
+      })),
+      // 드레스룸 모달 임시 착장
+      tempEquippedItems: { hat: null, necklace: null, pin: null, face: null },
+
       pigState: {
         name: '복돈이',
         level: 3,
@@ -357,8 +482,7 @@
       isChatTyping: false
     };
 
-    // 오리지널 귀여운 픽셀 아기 돼지 복돈이 캐릭터 SVG (배를 보일 때 다리와 발라당 누운 모양 변형)
-    function getPixelPigSvg(expression = 'normal', holdingApple = false, className = "w-24 h-24") {
+    function getPixelPigSvg(expression = 'normal', holdingApple = false, className = "w-24 h-24", items = state.equippedItems) {
       let eyeLeft = `
         <rect x="4" y="5" width="2" height="2" fill="#1E293B" />
         <rect x="4" y="5" width="1" height="1" fill="#FFFFFF" />
@@ -375,64 +499,169 @@
         <rect x="4" y="13" width="2" height="2" fill="#F472B6" />
         <rect x="10" y="13" width="2" height="2" fill="#F472B6" />
       `;
+      let blushBg = `
+        <rect x="2" y="7" width="2" height="1" fill="#F472B6" />
+        <rect x="12" y="7" width="2" height="1" fill="#F472B6" />
+      `;
 
-      if (expression === 'heart') {
+      if (expression === 'blush' || state.isFarting) {
+        blushBg = `
+          <rect x="2" y="6" width="3" height="3" fill="#EF4444" opacity="0.8" />
+          <rect x="11" y="6" width="3" height="3" fill="#EF4444" opacity="0.8" />
+        `;
+        eyeLeft = `<rect x="4" y="5" width="2" height="2" fill="#1E293B" />`;
+        eyeRight = `<rect x="10" y="5" width="2" height="2" fill="#1E293B" />`;
+        mouth = `<circle cx="8" cy="9" r="1" fill="#991B1B" />`;
+      } else if (expression === 'heart') {
         eyeLeft = `
           <rect x="3" y="4" width="1" height="1" fill="#E11D48" />
           <rect x="5" y="4" width="1" height="1" fill="#E11D48" />
           <rect x="2" y="5" width="5" height="1" fill="#E11D48" />
           <rect x="3" y="6" width="3" height="1" fill="#E11D48" />
-          <rect x="4" y="7" width="1" height="1" fill="#E11D48" />
         `;
         eyeRight = `
           <rect x="9" y="4" width="1" height="1" fill="#E11D48" />
           <rect x="11" y="4" width="1" height="1" fill="#E11D48" />
           <rect x="8" y="5" width="5" height="1" fill="#E11D48" />
           <rect x="9" y="6" width="3" height="1" fill="#E11D48" />
-          <rect x="10" y="7" width="1" height="1" fill="#E11D48" />
         `;
-      } else if (expression === 'star' || expression === 'dance') {
+      } else if (expression === 'dance') {
+        // 춤출 때 번쩍이지 않는 신나는 ^ ^ 웃는 눈 표정
+        eyeLeft = `
+          <rect x="3" y="6" width="1" height="1" fill="#1E293B" />
+          <rect x="4" y="5" width="1" height="1" fill="#1E293B" />
+          <rect x="5" y="6" width="1" height="1" fill="#1E293B" />
+        `;
+        eyeRight = `
+          <rect x="9" y="6" width="1" height="1" fill="#1E293B" />
+          <rect x="10" y="5" width="1" height="1" fill="#1E293B" />
+          <rect x="11" y="6" width="1" height="1" fill="#1E293B" />
+        `;
+        mouth = `
+          <rect x="7" y="8" width="2" height="2" fill="#BE185D" />
+          <rect x="7" y="9" width="2" height="1" fill="#F43F5E" />
+        `;
+        blushBg = `
+          <rect x="2" y="7" width="2" height="1" fill="#F43F5E" />
+          <rect x="12" y="7" width="2" height="1" fill="#F43F5E" />
+        `;
+      } else if (expression === 'star') {
         eyeLeft = `
           <rect x="4" y="3" width="1" height="5" fill="#D97706" />
           <rect x="2" y="5" width="5" height="1" fill="#D97706" />
-          <rect x="4" y="5" width="1" height="1" fill="#FEF08A" />
         `;
         eyeRight = `
           <rect x="10" y="3" width="1" height="5" fill="#D97706" />
           <rect x="8" y="5" width="5" height="1" fill="#D97706" />
-          <rect x="10" y="5" width="1" height="1" fill="#FEF08A" />
         `;
       } else if (expression === 'sleep') {
         eyeLeft = `<rect x="3" y="6" width="3" height="1" fill="#1E293B" />`;
         eyeRight = `<rect x="10" y="6" width="3" height="1" fill="#1E293B" />`;
       } else if (expression === 'kiss') {
-        mouth = `<rect x="7" y="8" width="2" height="2" fill="#E11D48" />`;
+        // 뽀뽀하는 '3' 입 모양
+        mouth = `
+          <rect x="7" y="8" width="2" height="1" fill="#E11D48" />
+          <rect x="8" y="9" width="1" height="1" fill="#E11D48" />
+          <rect x="7" y="10" width="2" height="1" fill="#E11D48" />
+        `;
       } else if (expression === 'belly') {
-        // 쓰다듬을 때 강아지처럼 발라당 누워서 배를 보이는 모습 (발을 위로 향함)
+        // 애교부릴 때 (배 뒤집기 + 뽀뽀하는 '3' 입 모양)
         legsAndBelly = `
           <rect x="3" y="13" width="2" height="2" fill="#F472B6" />
           <rect x="11" y="13" width="2" height="2" fill="#F472B6" />
           <rect x="6" y="11" width="4" height="2" fill="#FCE7F3" />
         `;
+        eyeLeft = `
+          <rect x="3" y="5" width="1" height="1" fill="#1E293B" />
+          <rect x="4" y="6" width="1" height="1" fill="#1E293B" />
+          <rect x="5" y="5" width="1" height="1" fill="#1E293B" />
+        `;
+        eyeRight = `
+          <rect x="9" y="5" width="1" height="1" fill="#1E293B" />
+          <rect x="10" y="6" width="1" height="1" fill="#1E293B" />
+          <rect x="11" y="5" width="1" height="1" fill="#1E293B" />
+        `;
+        mouth = `
+          <rect x="7" y="8" width="2" height="1" fill="#E11D48" />
+          <rect x="8" y="9" width="1" height="1" fill="#E11D48" />
+          <rect x="7" y="10" width="2" height="1" fill="#E11D48" />
+        `;
       }
+
+      // 액세서리 그래픽 layer
+      let hatGraphic = '';
+      if (items.hat === 'hat_straw') hatGraphic = `<polygon points="1,2 15,2 13,0 3,0" fill="#EAB308" /><rect x="3" y="1" width="10" height="1" fill="#CA8A04" />`;
+      else if (items.hat === 'hat_party') hatGraphic = `<polygon points="8,0 4,3 12,3" fill="#EC4899" /><circle cx="8" cy="0" r="0.8" fill="#FDE047" />`;
+      else if (items.hat === 'hat_grad') hatGraphic = `<polygon points="8,-1 1,1 8,3 15,1" fill="#1E293B" /><rect x="7" y="2" width="2" height="1" fill="#1E293B" />`;
+      else if (items.hat === 'hat_crown') hatGraphic = `<polygon points="3,2 5,0 8,2 11,0 13,2 13,3 3,3" fill="#F59E0B" /><circle cx="8" cy="1" r="0.5" fill="#EF4444" />`;
+      else if (items.hat === 'hat_frog') hatGraphic = `<rect x="3" y="0" width="10" height="3" fill="#22C55E" rx="1" /><circle cx="5" cy="0" r="1" fill="#FFF" /><circle cx="11" cy="0" r="1" fill="#FFF" />`;
+      else if (items.hat === 'hat_bear') hatGraphic = `<rect x="3" y="0" width="10" height="3" fill="#B45309" rx="1" /><circle cx="3" cy="0" r="1" fill="#B45309" /><circle cx="13" cy="0" r="1" fill="#B45309" />`;
+      else if (items.hat === 'hat_chef') hatGraphic = `<path d="M4,2 C4,-1 12,-1 12,2 Z" fill="#FFFFFF" /><rect x="4" y="2" width="8" height="1" fill="#E2E8F0" />`;
+      else if (items.hat === 'hat_wizard') hatGraphic = `<polygon points="8,-2 3,2 13,2" fill="#6366F1" /><circle cx="8" cy="0" r="0.8" fill="#FDE047" />`;
+      else if (items.hat === 'hat_ribbon') hatGraphic = `<rect x="3" y="1" width="10" height="2" fill="#3B82F6" /><rect x="1" y="2" width="6" height="1" fill="#2563EB" />`;
+      else if (items.hat === 'hat_rural') hatGraphic = `<path d="M2,3 Q8,-1 14,3 Z" fill="#F43F5E" /><circle cx="8" cy="1" r="0.5" fill="#FFF" />`;
+
+      let neckGraphic = '';
+      if (items.necklace === 'neck_pearl') neckGraphic = `<circle cx="5" cy="12" r="0.7" fill="#FFF" /><circle cx="8" cy="12.5" r="0.7" fill="#FFF" /><circle cx="11" cy="12" r="0.7" fill="#FFF" />`;
+      else if (items.necklace === 'neck_gold') neckGraphic = `<rect x="5" y="12" width="6" height="1" fill="#F59E0B" /><rect x="7.5" y="12.5" width="1" height="1" fill="#D97706" />`;
+      else if (items.necklace === 'neck_heart') neckGraphic = `<rect x="6" y="12" width="4" height="0.8" fill="#F43F5E" /><path d="M8,12.5 L7,13.5 L8,14.5 L9,13.5 Z" fill="#EF4444" />`;
+      else if (items.necklace === 'neck_bowtie') neckGraphic = `<polygon points="6,11.5 8,12 6,12.5" fill="#DC2626" /><polygon points="10,11.5 8,12 10,12.5" fill="#DC2626" />`;
+      else if (items.necklace === 'neck_bell') neckGraphic = `<rect x="5" y="12" width="6" height="0.8" fill="#DC2626" /><circle cx="8" cy="13" r="1" fill="#F59E0B" />`;
+      else if (items.necklace === 'neck_scarf') neckGraphic = `<path d="M4,11 Q8,13 12,11 L11,13 Q8,14 5,13 Z" fill="#10B981" />`;
+      else if (items.necklace === 'neck_flower') neckGraphic = `<circle cx="8" cy="12" r="0.8" fill="#EC4899" /><circle cx="6" cy="12" r="0.6" fill="#F472B6" /><circle cx="10" cy="12" r="0.6" fill="#F472B6" />`;
+      else if (items.necklace === 'neck_bone') neckGraphic = `<rect x="6.5" y="12" width="3" height="0.8" fill="#FFF" /><circle cx="6.5" cy="12" r="0.6" fill="#FFF" /><circle cx="9.5" cy="12" r="0.6" fill="#FFF" />`;
+      else if (items.necklace === 'neck_feather') neckGraphic = `<path d="M5,11 Q8,13 11,11" stroke="#38BDF8" stroke-width="0.8" fill="none" />`;
+      else if (items.necklace === 'neck_magic') neckGraphic = `<circle cx="8" cy="12.5" r="1" fill="#8B5CF6" />`;
+
+      let pinGraphic = '';
+      if (items.pin === 'pin_red_ribbon') pinGraphic = `<circle cx="12" cy="2" r="1" fill="#EF4444" /><polygon points="11,1 12,2 11,3" fill="#DC2626" /><polygon points="13,1 12,2 13,3" fill="#DC2626" />`;
+      else if (items.pin === 'pin_star') pinGraphic = `<polygon points="12,1 12.5,2 13.5,2 12.7,2.5 13,3.5 12,3 11,3.5 11.3,2.5 10.5,2 11.5,2" fill="#FBBF24" />`;
+      else if (items.pin === 'pin_sprout') pinGraphic = `<path d="M12,2 Q10,0 10,-1 Q12,0 12,2 Z" fill="#22C55E" /><path d="M12,2 Q14,0 14,-1 Q12,0 12,2 Z" fill="#22C55E" />`;
+      else if (items.pin === 'pin_cherry') pinGraphic = `<circle cx="11.5" cy="3" r="0.8" fill="#EF4444" /><circle cx="13" cy="3" r="0.8" fill="#EF4444" /><path d="M12.2,1 L11.5,3 M12.2,1 L13,3" stroke="#15803D" stroke-width="0.5" />`;
+      else if (items.pin === 'pin_heart') pinGraphic = `<path d="M12,2 C11,1 10,2 12,3.5 C14,2 13,1 12,2 Z" fill="#EC4899" />`;
+      else if (items.pin === 'pin_clover') pinGraphic = `<circle cx="11.5" cy="1.5" r="0.6" fill="#16A34A" /><circle cx="12.5" cy="1.5" r="0.6" fill="#16A34A" /><circle cx="12" cy="2.2" r="0.6" fill="#16A34A" />`;
+      else if (items.pin === 'pin_eyes') pinGraphic = `<circle cx="11.5" cy="2" r="0.8" fill="#FFF" /><circle cx="11.5" cy="2" r="0.4" fill="#000" /><circle cx="13" cy="2" r="0.8" fill="#FFF" /><circle cx="13" cy="2" r="0.4" fill="#000" />`;
+      else if (items.pin === 'pin_feather') pinGraphic = `<path d="M11,3 Q13,0 14,-1" stroke="#F472B6" stroke-width="1" />`;
+      else if (items.pin === 'pin_sparkle') pinGraphic = `<path d="M12,0 L12.5,1.5 L14,2 L12.5,2.5 L12,4 L11.5,2.5 L10,2 L11.5,1.5 Z" fill="#FDE047" />`;
+      else if (items.pin === 'pin_carrot') pinGraphic = `<polygon points="12,1 11,3 13,3" fill="#F97316" /><rect x="11.5" y="0" width="1" height="1" fill="#16A34A" />`;
+
+      let faceGraphic = '';
+      if (items.face === 'face_heart_blush') faceGraphic = `<path d="M3,7 C2.5,6.5 2,7 3,7.8 C4,7 3.5,6.5 3,7 Z" fill="#EC4899" /><path d="M13,7 C12.5,6.5 12,7 13,7.8 C14,7 13.5,6.5 13,7 Z" fill="#EC4899" />`;
+      else if (items.face === 'face_pink_blush') faceGraphic = `<circle cx="3" cy="7.5" r="1" fill="#F472B6" opacity="0.7" /><circle cx="13" cy="7.5" r="1" fill="#F472B6" opacity="0.7" />`;
+      else if (items.face === 'face_cat_whisker') faceGraphic = `<line x1="1" y1="7" x2="3" y2="7.5" stroke="#475569" stroke-width="0.5" /><line x1="1" y1="8" x2="3" y2="8" stroke="#475569" stroke-width="0.5" /><line x1="13" y1="7.5" x2="15" y2="7" stroke="#475569" stroke-width="0.5" /><line x1="13" y1="8" x2="15" y2="8" stroke="#475569" stroke-width="0.5" />`;
+      else if (items.face === 'face_gentle_stache') faceGraphic = `<path d="M5,10 Q6.5,8.5 8,10 Q9.5,8.5 11,10" stroke="#1E293B" stroke-width="0.8" fill="none" />`;
+      else if (items.face === 'face_doodle') faceGraphic = `<path d="M2,6 Q4,8 3,9" stroke="#334155" stroke-width="0.5" fill="none" />`;
+      else if (items.face === 'face_swirl') faceGraphic = `<circle cx="3" cy="7.5" r="0.8" stroke="#DB2777" stroke-width="0.4" fill="none" /><circle cx="13" cy="7.5" r="0.8" stroke="#DB2777" stroke-width="0.4" fill="none" />`;
+      else if (items.face === 'face_glasses') faceGraphic = `<rect x="3" y="4.5" width="3" height="2" stroke="#000" stroke-width="0.5" fill="none" /><rect x="10" y="4.5" width="3" height="2" stroke="#000" stroke-width="0.5" fill="none" /><line x1="6" y1="5.5" x2="10" y2="5.5" stroke="#000" stroke-width="0.5" />`;
+      else if (items.face === 'face_tear') faceGraphic = `<path d="M12,6 C11.5,7 12.5,7.5 12,8 C11.5,7.5 12.5,7 12,6 Z" fill="#38BDF8" />`;
+      else if (items.face === 'face_bandaid') faceGraphic = `<rect x="11.5" y="6.5" width="3" height="1.5" fill="#FDE68A" rx="0.3" transform="rotate(-15 13 7)" />`;
+      else if (items.face === 'face_cat_nose') faceGraphic = `<polygon points="8,7 7.2,8 8.8,8" fill="#EC4899" />`;
 
       return `
         <svg viewBox="0 0 16 16" class="${className} pixel-crisp drop-shadow-md">
+          <!-- 귀 -->
           <rect x="2" y="1" width="3" height="3" fill="#F472B6" />
           <rect x="3" y="2" width="1" height="1" fill="#F43F5E" />
           <rect x="11" y="1" width="3" height="3" fill="#F472B6" />
           <rect x="12" y="2" width="1" height="1" fill="#F43F5E" />
+          <!-- 몸통 -->
           <rect x="2" y="3" width="12" height="10" fill="#FBCFE8" />
           <rect x="1" y="4" width="14" height="8" fill="#FBCFE8" />
           <rect x="3" y="2" width="10" height="12" fill="#FBCFE8" />
+          <!-- 이목구비 -->
+          ${blushBg}
           ${eyeLeft}
           ${eyeRight}
-          <rect x="2" y="7" width="2" height="1" fill="#F472B6" />
-          <rect x="12" y="7" width="2" height="1" fill="#F472B6" />
           <rect x="5" y="7" width="6" height="4" fill="#F472B6" />
           ${mouth}
           ${legsAndBelly}
           ${holdingApple ? `<rect x="7" y="10" width="2" height="2" fill="#EF4444" />` : ''}
+          
+          <!-- 악세서리 오버레이 레이어 -->
+          ${faceGraphic}
+          ${neckGraphic}
+          ${pinGraphic}
+          ${hatGraphic}
         </svg>
       `;
     }
@@ -463,12 +692,6 @@
           <rect x="5" y="14" width="2" height="5" fill="#9F1239" />
           <rect x="13" y="14" width="2" height="5" fill="#9F1239" />
           <rect x="7" y="14" width="6" height="5" fill="#FEF3C7" />
-          <rect x="5" y="13" width="1" height="1" fill="#FDE047" />
-          <rect x="14" y="13" width="1" height="1" fill="#FDE047" />
-          <rect x="4" y="16" width="1" height="1" fill="#F472B6" />
-          <rect x="15" y="16" width="1" height="1" fill="#F472B6" />
-          <rect x="5" y="18" width="1" height="1" fill="#FDE047" />
-          <rect x="14" y="18" width="1" height="1" fill="#FDE047" />
         </svg>
       `;
     }
@@ -488,26 +711,18 @@
 
     function cleanDishName(rawHtml) {
       if (!rawHtml) return { items: [], allergyInfo: '' };
-      
       const cleanText = rawHtml.replace(/<br\s*\/?>/gi, '\n');
       const lines = cleanText.split('\n');
-      
       const items = [];
       let allergyInfo = '';
 
       lines.forEach(line => {
         const trimmed = line.trim();
         if (!trimmed) return;
-        
         const allergyMatch = trimmed.match(/[\(\.]([0-9\.\s]+)[\)\.]?$/);
-        if (allergyMatch) {
-          allergyInfo = allergyMatch[1];
-        }
-
+        if (allergyMatch) allergyInfo = allergyMatch[1];
         const dishName = trimmed.replace(/\([0-9\.\s]+\)/g, '').replace(/[0-9\.]+/g, '').trim();
-        if (dishName.length > 0) {
-          items.push(dishName);
-        }
+        if (dishName.length > 0) items.push(dishName);
       });
 
       return { items, allergyInfo };
@@ -520,11 +735,9 @@
 
       const year = yearMonthStr.slice(0, 4);
       const month = yearMonthStr.slice(4, 6);
-      
       const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
       const fromYmd = `${yearMonthStr}01`;
       const toYmd = `${yearMonthStr}${String(lastDay).padStart(2, '0')}`;
-
       const apiKeyParam = state.neisApiKey ? `&KEY=${state.neisApiKey}` : '';
       const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
 
@@ -688,10 +901,11 @@
             `}
           </div>
 
+          <!-- 홈 탭 복돈이 미니 상태 카드 -->
           <div class="bg-[#FAF3E5] border border-[#E0D0C0] rounded-2xl p-4 shadow-sm flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-14 h-14 bg-[#FFE4D6] border border-[#D87A56] rounded-2xl flex items-center justify-center p-1 shadow-sm">
-                ${getPixelPigSvg('normal', false, 'w-12 h-12')}
+              <div class="w-16 h-16 bg-[#FFE4D6] border border-[#D87A56] rounded-2xl flex items-center justify-center p-1 shadow-sm">
+                ${getPixelPigSvg(state.pigExpression, false, 'w-12 h-12')}
               </div>
               <div>
                 <div class="flex items-center gap-2">
@@ -848,33 +1062,6 @@
               }).join('')}
             </div>
           </div>
-
-          <div class="bg-white rounded-2xl border border-[#E2D5C3] p-4 shadow-sm space-y-2.5">
-            <h3 class="font-bold text-xs text-[#6E5A4C] border-b border-[#EADBC8] pb-1.5 flex justify-between items-center">
-              <span>이달의 주요 행사 (${year}.${month})</span>
-              <span class="text-[10px] text-[#8C6A50] font-normal">총 ${state.events.length}건</span>
-            </h3>
-
-            ${state.isLoading ? `
-              <div class="text-center py-6 text-xs text-[#8C7462] animate-pulse">
-                👵 학사일정 정보를 불러오고 있습니다...
-              </div>
-            ` : state.events.length === 0 ? `
-              <p class="text-xs text-[#8C6A50] py-4 text-center">이번 달에는 나이스에 등록된 주요 학사 일정이 없단다.</p>
-            ` : state.events.map(ev => `
-              <div class="flex items-center justify-between text-xs py-1.5 border-b border-dashed border-[#F0E4D8] last:border-0">
-                <div class="flex items-center gap-2">
-                  <span class="bg-[#F3E2D0] text-[#5C4535] px-2 py-0.5 rounded font-bold text-[11px]">
-                    ${ev.date.slice(5)}
-                  </span>
-                  <span class="font-semibold text-[#4A3B32]">${ev.title}</span>
-                </div>
-                <span class="text-[10px] text-[#D87A56] bg-[#FFF0E6] px-2 py-0.5 rounded-full font-bold">
-                  ${ev.type}
-                </span>
-              </div>
-            `).join('')}
-          </div>
         </div>
       `;
     }
@@ -884,30 +1071,36 @@
         <div class="space-y-4 animate-fadeIn">
           <div class="bg-[#FAF0E6] p-3.5 rounded-2xl border border-[#E8D8C8] flex items-center justify-between">
             <div>
-              <h2 class="font-bold text-base text-[#4A3B32]">복돈이의 아늑한 시골 방</h2>
-              <p class="text-xs text-[#8C6A50]">우리 복돈이와 즐거운 시간을 보내보렴!</p>
+              <h2 class="font-bold text-base text-[#4A3B32]">복돈이의 아늑한 사랑채</h2>
+              <p class="text-xs text-[#8C6A50]">귀여운 픽셀 돼지 복돈이의 개인 공간</p>
             </div>
-            <span class="text-xs bg-[#D87A56] text-white px-2.5 py-1 rounded-lg font-bold">
-              Lv. ${state.pigState.level}
-            </span>
           </div>
 
-          <!-- 시골 할머니집 스타일의 아늑한 방 배경 -->
-          <div class="bg-[#EEDCAE] border-4 border-[#C8A268] rounded-3xl p-5 text-center space-y-4 relative overflow-hidden shadow-inner min-h-[420px] flex flex-col justify-between" style="background-image: linear-gradient(0deg, #E6D0A0 0%, #F5E8C7 100%);">
+          <!-- 복돈이 방 (가구 없는 깔끔하고 따뜻한 시골 방 배경) -->
+          <div class="bg-[#F8EED8] border-4 border-[#D8A268] rounded-3xl p-4 text-center space-y-4 relative overflow-hidden shadow-inner min-h-[440px] flex flex-col justify-between" style="background-image: linear-gradient(180deg, #FDF7E7 0%, #F5E5C0 75%, #EAD8AE 100%);">
             
-            <!-- 방 상단 소품 및 남은 스낵 -->
+            <!-- 방 상단 잔여 스낵 & 복돈이 방 옷장 버튼 -->
             <div class="flex justify-between items-center z-10">
-              <span id="pig-snack-badge" class="bg-[#FAF0E6]/90 backdrop-blur-sm text-[#5C3A21] px-3 py-1 rounded-full text-xs font-bold border border-[#D8A268] shadow-sm">
+              <span id="pig-snack-badge" class="bg-white/90 backdrop-blur-sm text-[#5C3A21] px-3 py-1.5 rounded-full text-xs font-bold border border-[#D8A268] shadow-sm">
                 남은 스낵: 🍎 ${state.pigState.snackCount}개
               </span>
-              <span class="text-xs font-bold text-[#7C5A38] bg-[#FAF0E6]/90 px-3 py-1 rounded-full border border-[#D8A268]">
-                🏠 할머니네 사랑채
-              </span>
+              
+              <!-- 복돈이 방 내부에 배치된 옷장(드레스룸) 버튼 -->
+              <button id="btn-open-closet" class="bg-[#D87A56] hover:bg-[#C26946] text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-1.5 border border-[#FFE4D6]">
+                <span class="text-sm">👕</span>
+                <span>복돈이 옷장</span>
+              </button>
             </div>
 
-            <!-- 하트/별/음표/zzz 이펙트 영역 -->
+            <!-- 하트/별/음표/zzz/방귀 이펙트 영역 -->
             <div id="pig-effect-area" class="absolute inset-0 pointer-events-none z-30 flex items-center justify-center ${state.showEffect ? '' : 'hidden'}">
-              ${state.effectType === 'hearts' ? `
+              ${state.effectType === 'fart' ? `
+                <div class="animate-float-1 text-5xl absolute bottom-24 right-12">💨</div>
+                <div class="animate-float-2 text-4xl absolute bottom-28 right-20">💨</div>
+                <div class="text-3xl absolute top-12 left-1/2 -translate-x-1/2 bg-red-500 text-white font-extrabold px-3 py-1 rounded-full shadow-lg">
+                  뽀오옹~! 😳
+                </div>
+              ` : state.effectType === 'hearts' ? `
                 <div class="animate-float-1 text-4xl absolute top-12 left-16">💖</div>
                 <div class="animate-float-2 text-5xl absolute top-8 left-1/2 -translate-x-1/2">❤️</div>
                 <div class="animate-float-3 text-4xl absolute top-12 right-16">💕</div>
@@ -925,26 +1118,25 @@
               `}
             </div>
 
-            <!-- 말풍선 및 오리지널 픽셀 복돈이 캐릭터 (큼직하게 렌더링) -->
+            <!-- 말풍선 및 오리지널 픽셀 복돈이 캐릭터 -->
             <div class="flex flex-col items-center justify-center my-auto relative z-20">
-              <!-- 말풍선 -->
               <div id="pig-speech-bubble" class="bg-white border-2 border-[#D87A56] text-[#4A3B32] text-xs font-bold px-4 py-2 rounded-2xl shadow-md mb-3 max-w-[260px] relative animate-fadeIn transition-all">
                 "<span id="pig-speech-text">${state.pigSpeech}</span>"
                 <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b-2 border-r-2 border-[#D87A56] rotate-45"></div>
               </div>
 
-              <!-- 오리지널 귀여운 픽셀 복돈이 캐릭터 본체 (크기 확대) -->
+              <!-- 터치 가능 복돈이 메인 캐릭터 -->
               <div id="btn-click-pig" class="cursor-pointer transition-transform hover:scale-110 active:scale-95 p-2 relative group">
                 <div class="flex flex-col items-center" id="pig-svg-container">
-                  ${getPixelPigSvg(state.pigExpression, state.pigHoldingApple, "w-32 h-32")}
-                  <div class="mt-2 bg-[#8B5A2B] text-white text-[11px] font-extrabold px-3 py-0.5 rounded-full shadow border border-[#D8A268]">
+                  ${getPixelPigSvg(state.pigExpression, state.pigHoldingApple, "w-36 h-36")}
+                  <div class="mt-1 bg-[#8B5A2B] text-white text-[11px] font-extrabold px-3 py-0.5 rounded-full shadow border border-[#D8A268]">
                     ${state.pigState.name}
                   </div>
                 </div>
               </div>
             </div>
 
-            <!-- 하단 5가지 인터랙션 버튼 -->
+            <!-- 하단 인터랙션 버튼 5종 -->
             <div class="grid grid-cols-3 gap-2 pt-2 z-10">
               <button id="btn-feed-pig" class="bg-[#D87A56] hover:bg-[#C26946] text-white py-2.5 px-2 rounded-2xl font-bold text-xs shadow transition-all active:scale-95 flex items-center justify-center gap-1">
                 🍎 먹이주기
@@ -1024,7 +1216,6 @@
       `;
     }
 
-    // 화면 깜빡임 없이 부드럽게 복돈이 상태만 즉시 업데이트하는 헬퍼 함수
     function updatePigUI() {
       const speechText = document.getElementById('pig-speech-text');
       if (speechText) speechText.textContent = state.pigSpeech;
@@ -1032,8 +1223,8 @@
       const svgContainer = document.getElementById('pig-svg-container');
       if (svgContainer) {
         svgContainer.innerHTML = `
-          ${getPixelPigSvg(state.pigExpression, state.pigHoldingApple, "w-32 h-32")}
-          <div class="mt-2 bg-[#8B5A2B] text-white text-[11px] font-extrabold px-3 py-0.5 rounded-full shadow border border-[#D8A268]">
+          ${getPixelPigSvg(state.pigExpression, state.pigHoldingApple, "w-36 h-36")}
+          <div class="mt-1 bg-[#8B5A2B] text-white text-[11px] font-extrabold px-3 py-0.5 rounded-full shadow border border-[#D8A268]">
             ${state.pigState.name}
           </div>
         `;
@@ -1043,7 +1234,15 @@
       if (effectArea) {
         if (state.showEffect) {
           effectArea.classList.remove('hidden');
-          if (state.effectType === 'hearts') {
+          if (state.effectType === 'fart') {
+            effectArea.innerHTML = `
+              <div class="animate-float-1 text-5xl absolute bottom-24 right-12">💨</div>
+              <div class="animate-float-2 text-4xl absolute bottom-28 right-20">💨</div>
+              <div class="text-3xl absolute top-12 left-1/2 -translate-x-1/2 bg-red-500 text-white font-extrabold px-3 py-1 rounded-full shadow-lg">
+                뽀오옹~! 😳
+              </div>
+            `;
+          } else if (state.effectType === 'hearts') {
             effectArea.innerHTML = `
               <div class="animate-float-1 text-4xl absolute top-12 left-16">💖</div>
               <div class="animate-float-2 text-5xl absolute top-8 left-1/2 -translate-x-1/2">❤️</div>
@@ -1078,6 +1277,43 @@
       }
     }
 
+    function renderClosetItemsGrid() {
+      const grid = document.getElementById('closet-items-grid');
+      const preview = document.getElementById('closet-preview-pig');
+      if (!grid || !preview) return;
+
+      // 드레스룸 미리보기 돼지
+      preview.innerHTML = getPixelPigSvg('normal', false, 'w-24 h-24', state.tempEquippedItems);
+
+      const itemsList = ACCESSORIES[state.activeClosetTab] || [];
+      const currentSelected = state.tempEquippedItems[state.activeClosetTab];
+
+      grid.innerHTML = itemsList.map(item => {
+        const isSelected = currentSelected === item.id;
+        return `
+          <button data-item-id="${item.id}" class="btn-closet-item p-2 rounded-2xl border ${
+            isSelected ? 'border-2 border-[#D87A56] bg-[#FFE4D6]' : 'border-[#E0D0C0] bg-white hover:bg-[#FAF3E5]'
+          } flex items-center gap-2 text-left transition-all active:scale-95">
+            <span class="text-2xl">${item.icon}</span>
+            <span class="text-xs font-bold text-[#4A3B32] truncate">${item.name}</span>
+          </button>
+        `;
+      }).join('');
+
+      // 아이템 토글 클릭 이벤트
+      document.querySelectorAll('.btn-closet-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const itemId = btn.dataset.itemId;
+          if (state.tempEquippedItems[state.activeClosetTab] === itemId) {
+            state.tempEquippedItems[state.activeClosetTab] = null;
+          } else {
+            state.tempEquippedItems[state.activeClosetTab] = itemId;
+          }
+          renderClosetItemsGrid();
+        });
+      });
+    }
+
     function attachTabEvents() {
       const btnRefresh = document.getElementById('btn-refresh');
       if (btnRefresh) {
@@ -1099,45 +1335,83 @@
         });
       }
 
-      const btnGoMeals = document.getElementById('btn-go-meals');
-      if (btnGoMeals) {
-        btnGoMeals.addEventListener('click', () => {
-          switchTab('meals');
-        });
-      }
-
-      const btnGoPig = document.getElementById('btn-go-pig');
-      if (btnGoPig) {
-        btnGoPig.addEventListener('click', () => {
-          switchTab('pig');
-        });
-      }
+      document.getElementById('btn-go-meals')?.addEventListener('click', () => switchTab('meals'));
+      document.getElementById('btn-go-pig')?.addEventListener('click', () => switchTab('pig'));
 
       const btnPrevCal = document.getElementById('btn-prev-month-cal');
       const btnNextCal = document.getElementById('btn-next-month-cal');
       if (btnPrevCal) btnPrevCal.addEventListener('click', () => { changeMonth(-1); });
       if (btnNextCal) btnNextCal.addEventListener('click', () => { changeMonth(1); });
 
-      // 복돈이 직접 터치 시 대사 변경
-      const btnClickPig = document.getElementById('btn-click-pig');
-      if (btnClickPig) {
-        btnClickPig.addEventListener('click', () => {
-          const cuteQuotes = [
-            '꿀꿀! 오늘도 너랑 놀아서 정말 즐거워~ 🐷',
-            '배고프니까 사과 스낵 하나 주면 안 될까? 🍎',
-            '할머니가 만들어주신 누룽지가 먹고 싶어라~',
-            '내 이름은 복돈이! 복을 불러오는 아기 돼지야 ✨',
-            '헤헤, 쓰다듬어 주니까 기분이 너무 좋다쿠! 💕'
-          ];
-          state.pigSpeech = cuteQuotes[Math.floor(Math.random() * cuteQuotes.length)];
-          state.pigExpression = 'normal';
-          state.pigHoldingApple = false;
-          state.showEffect = false;
-          updatePigUI();
+      // 👕 옷장 모달 열기 이벤트
+      const btnOpenCloset = document.getElementById('btn-open-closet');
+      const modalCloset = document.getElementById('modal-closet');
+      if (btnOpenCloset && modalCloset) {
+        btnOpenCloset.addEventListener('click', () => {
+          state.tempEquippedItems = JSON.parse(JSON.stringify(state.equippedItems));
+          modalCloset.classList.remove('hidden');
+          renderClosetItemsGrid();
         });
       }
 
-      // 1. 먹이주기 버튼 (최소 2번 통통 튀는 애니메이션)
+      // 복돈이 직접 연속 4번 터치 -> 방귀 및 부끄러워함 이벤트
+      const btnClickPig = document.getElementById('btn-click-pig');
+      if (btnClickPig) {
+        btnClickPig.addEventListener('click', () => {
+          state.pigClickCount++;
+
+          if (state.pigClickTimer) clearTimeout(state.pigClickTimer);
+
+          // 1.5초 내 연속 4번 클릭 시 방귀 발생
+          if (state.pigClickCount >= 4) {
+            state.pigClickCount = 0;
+            state.isFarting = true;
+            state.showEffect = true;
+            state.effectType = 'fart';
+            state.pigExpression = 'blush';
+            state.pigSpeech = '뽀오옹~! 💨 아이쿠 부끄러워라...! 😳';
+
+            const svgContainer = document.getElementById('pig-svg-container');
+            if (svgContainer) {
+              svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart');
+              void svgContainer.offsetWidth;
+              svgContainer.classList.add('animate-fart');
+            }
+
+            updatePigUI();
+
+            setTimeout(() => {
+              state.isFarting = false;
+              state.showEffect = false;
+              state.pigExpression = 'normal';
+              state.pigSpeech = '히히... 방귀 뀐 건 비밀로 해줘! 🤫';
+              updatePigUI();
+            }, 3000);
+            return;
+          }
+
+          state.pigClickTimer = setTimeout(() => {
+            state.pigClickCount = 0;
+          }, 1500);
+
+          if (!state.isFarting) {
+            const cuteQuotes = [
+              '꿀꿀! 오늘도 너랑 놀아서 정말 즐거워~ 🐷',
+              '배고프니까 사과 스낵 하나 주면 안 될까? 🍎',
+              '할머니가 만들어주신 누룽지가 먹고 싶어라~',
+              '내 이름은 복돈이! 복을 불러오는 아기 돼지야 ✨',
+              '헤헤, 쓰다듬어 주니까 기분이 너무 좋다쿠! 💕'
+            ];
+            state.pigSpeech = cuteQuotes[Math.floor(Math.random() * cuteQuotes.length)];
+            state.pigExpression = 'normal';
+            state.pigHoldingApple = false;
+            state.showEffect = false;
+            updatePigUI();
+          }
+        });
+      }
+
+      // 먹이주기 버튼
       const btnFeed = document.getElementById('btn-feed-pig');
       if (btnFeed) {
         btnFeed.addEventListener('click', () => {
@@ -1166,7 +1440,7 @@
           
           const svgContainer = document.getElementById('pig-svg-container');
           if (svgContainer) {
-            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up');
+            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart');
             void svgContainer.offsetWidth;
             svgContainer.classList.add('animate-double-bounce');
           }
@@ -1178,25 +1452,95 @@
             state.pigExpression = 'normal';
             state.pigHoldingApple = false;
             updatePigUI();
-          }, 2000);
+          }, 2500);
         });
       }
 
-      // 2. 쓰다듬기 버튼 (강아지처럼 발라당 배를 보이며 눕는 모션 + 별)
+      // 쓰다듬기 버튼
       const btnPet = document.getElementById('btn-pet-pig');
       if (btnPet) {
         btnPet.addEventListener('click', () => {
           state.pigState.happiness = Math.min(100, state.pigState.happiness + 15);
-          state.pigSpeech = '발라당~ 간지러워요! 내 배를 쓰다듬어주세요 쿠키~ 🐾✨';
-          
+          state.pigSpeech = '헤헤~ 따뜻한 손길에 기분이 살르르 녹아내려~! 💕';
           state.showEffect = true;
-          state.effectType = 'stars';
-          state.pigExpression = 'belly';
-          state.pigHoldingApple = false;
+          state.effectType = 'hearts';
+          state.pigExpression = 'kiss';
 
           const svgContainer = document.getElementById('pig-svg-container');
           if (svgContainer) {
-            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up');
+            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart');
+            void svgContainer.offsetWidth;
+            svgContainer.classList.add('animate-wiggle-jump');
+          }
+
+          updatePigUI();
+
+          setTimeout(() => {
+            state.showEffect = false;
+            state.pigExpression = 'normal';
+            updatePigUI();
+          }, 2500);
+        });
+      }
+
+      // 춤추기 버튼 (눈 번쩍임 제거 및 신나는 ^ ^ 표정 적용)
+      const btnDance = document.getElementById('btn-dance-pig');
+      if (btnDance) {
+        btnDance.addEventListener('click', () => {
+          state.pigSpeech = '꿀꿀 신나는 댄스 타임! 룰루랄라~ 🎶';
+          state.showEffect = true;
+          state.effectType = 'notes';
+          state.pigExpression = 'dance';
+
+          const svgContainer = document.getElementById('pig-svg-container');
+          if (svgContainer) {
+            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart');
+            void svgContainer.offsetWidth;
+            svgContainer.classList.add('animate-wiggle-jump');
+          }
+
+          updatePigUI();
+
+          setTimeout(() => {
+            state.showEffect = false;
+            state.pigExpression = 'normal';
+            updatePigUI();
+          }, 2500);
+        });
+      }
+
+      // 낮잠자기 버튼
+      const btnSleep = document.getElementById('btn-sleep-pig');
+      if (btnSleep) {
+        btnSleep.addEventListener('click', () => {
+          state.pigSpeech = '쿨쿨... 배부르고 등따뜻하니 잠이 솔솔 와... 💤';
+          state.showEffect = true;
+          state.effectType = 'sleep';
+          state.pigExpression = 'sleep';
+
+          updatePigUI();
+
+          setTimeout(() => {
+            state.showEffect = false;
+            state.pigExpression = 'normal';
+            state.pigSpeech = '하품~! 개운하게 잘 잤다! 꿀꿀!';
+            updatePigUI();
+          }, 3000);
+        });
+      }
+
+      // 애교부리기 버튼 (귀여운 3 모양 뽀뽀 입술 표정 적용)
+      const btnAegyo = document.getElementById('btn-aegyo-pig');
+      if (btnAegyo) {
+        btnAegyo.addEventListener('click', () => {
+          state.pigSpeech = '나 배 뒤집어서 뒹굴뒹굴~ 애교 배달이요~! 💖';
+          state.showEffect = true;
+          state.effectType = 'stars';
+          state.pigExpression = 'belly';
+
+          const svgContainer = document.getElementById('pig-svg-container');
+          if (svgContainer) {
+            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart');
             void svgContainer.offsetWidth;
             svgContainer.classList.add('animate-belly-up');
           }
@@ -1207,103 +1551,38 @@
             state.showEffect = false;
             state.pigExpression = 'normal';
             updatePigUI();
-          }, 2000);
-        });
-      }
-
-      // 3. 춤추기 버튼 (좌우로 흔들며 통통 튀기)
-      const btnDance = document.getElementById('btn-dance-pig');
-      if (btnDance) {
-        btnDance.addEventListener('click', () => {
-          state.pigState.happiness = Math.min(100, state.pigState.happiness + 20);
-          state.pigSpeech = '신나는 시골 댄스 타임! 덩실덩실 엉덩이 씰룩씰룩~ 🎵';
-          
-          state.showEffect = true;
-          state.effectType = 'notes';
-          state.pigExpression = 'dance';
-          state.pigHoldingApple = false;
-
-          const svgContainer = document.getElementById('pig-svg-container');
-          if (svgContainer) {
-            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up');
-            void svgContainer.offsetWidth;
-            svgContainer.classList.add('animate-wiggle-jump');
-          }
-
-          updatePigUI();
-
-          setTimeout(() => {
-            state.showEffect = false;
-            state.pigExpression = 'normal';
-            updatePigUI();
           }, 2500);
         });
       }
 
-      // 4. 낮잠자기 버튼
-      const btnSleep = document.getElementById('btn-sleep-pig');
-      if (btnSleep) {
-        btnSleep.addEventListener('click', () => {
-          state.pigState.hunger = Math.min(100, state.pigState.hunger + 5);
-          state.pigSpeech = '쿨쿨... 따뜻한 마루바닥에서 낮잠 자는 중이에요... zzz 💤';
-          
-          state.showEffect = true;
-          state.effectType = 'sleep';
-          state.pigExpression = 'sleep';
-          state.pigHoldingApple = false;
-          updatePigUI();
-
-          setTimeout(() => {
-            state.showEffect = false;
-            state.pigExpression = 'normal';
-            updatePigUI();
-          }, 2500);
-        });
-      }
-
-      // 5. 애교부리기 버튼 (좌우로 흔들며 애교)
-      const btnAegyo = document.getElementById('btn-aegyo-pig');
-      if (btnAegyo) {
-        btnAegyo.addEventListener('click', () => {
-          state.pigState.happiness = Math.min(100, state.pigState.happiness + 25);
-          state.pigSpeech = '쪽~ 3 뽀뽀! 우리 주인님 최고 사랑해요! 💕';
-          
-          state.showEffect = true;
-          state.effectType = 'hearts';
-          state.pigExpression = 'kiss';
-          state.pigHoldingApple = false;
-
-          const svgContainer = document.getElementById('pig-svg-container');
-          if (svgContainer) {
-            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up');
-            void svgContainer.offsetWidth;
-            svgContainer.classList.add('animate-wiggle-jump');
-          }
-
-          updatePigUI();
-
-          setTimeout(() => {
-            state.showEffect = false;
-            state.pigExpression = 'normal';
-            updatePigUI();
-          }, 2000);
-        });
-      }
-
+      // 수다방 AI 전송
       const btnSendChat = document.getElementById('btn-send-chat');
       const chatInput = document.getElementById('chat-input-text');
       if (btnSendChat && chatInput) {
-        const handleSend = () => {
-          const val = chatInput.value.trim();
-          if (!val || state.isChatTyping) return;
+        const handleSend = async () => {
+          const text = chatInput.value.trim();
+          if (!text) return;
 
-          state.chatMessages.push({ id: Date.now(), sender: 'user', text: val });
+          state.chatMessages.push({ id: Date.now(), sender: 'user', text: text });
           chatInput.value = '';
           state.isChatTyping = true;
           renderTab();
 
-          scrollChatToBottom();
-          sendAiChatResponse(val);
+          // 모의 / Gemini AI 응답 생성
+          setTimeout(() => {
+            let responseText = '아이고 그래~ 밥 든든하게 먹고 항상 건장하게 지내려무나!';
+            if (text.includes('급식') || text.includes('밥')) {
+              responseText = `오늘 우리 강아지 학교 급식은 ${state.meals[0] ? state.meals[0].menuTitle : '맛있는 밥'}이 나오는구나! 꼭 다 먹으려무나~`;
+            } else if (text.includes('일정') || text.includes('시험') || text.includes('방학')) {
+              responseText = `이번 달 학사일정을 보니까 ${state.events[0] ? state.events[0].title : '즐거운 학교생활'} 일정이 있단다!`;
+            } else if (text.includes('안녕') || text.includes('할머니')) {
+              responseText = '오냐 오냐~ 오늘도 기분 좋은 하루 보내고 복돈이 사과도 잘 챙겨주거라!';
+            }
+
+            state.chatMessages.push({ id: Date.now() + 1, sender: 'grandma', text: responseText });
+            state.isChatTyping = false;
+            renderTab();
+          }, 1000);
         };
 
         btnSendChat.addEventListener('click', handleSend);
@@ -1313,291 +1592,186 @@
       }
     }
 
-    function changeMonth(delta) {
-      let y = parseInt(state.currentYearMonth.slice(0, 4));
-      let m = parseInt(state.currentYearMonth.slice(4, 6)) + delta;
-
-      if (m > 12) {
-        y += 1;
-        m = 1;
-      } else if (m < 1) {
-        y -= 1;
-        m = 12;
-      }
-
-      state.currentYearMonth = `${y}${String(m).padStart(2, '0')}`;
-      fetchSchoolData(state.selectedSchool, state.currentYearMonth);
-    }
-
-    async function sendAiChatResponse(userMsg) {
-      const apiKey = state.geminiApiKey.trim();
-      const todayMeal = state.meals.find(m => m.date === todayStr);
-
-      let mealInfoText = todayMeal 
-        ? `오늘 급식(${todayMeal.date}): ${todayMeal.items.join(', ')} (${todayMeal.calories})` 
-        : '오늘 급식: 정보 없음';
-
-      const upcomingMealsText = state.meals.length > 0 
-        ? state.meals.map(m => `[${m.date}(${m.day})]: ${m.items.join(', ')}`).join('\n')
-        : '이번 주 급식 정보 없음';
-
-      const eventsText = state.events.length > 0
-        ? state.events.map(e => `[${e.date}]: ${e.title} (${e.type})`).join('\n')
-        : '이번 달 학사일정 정보 없음';
-
-      // 할머니 AI 시스템 프롬프트: 일정 질문 시 상세히 답변하도록 프롬프트 보강
-      const systemPrompt = `당신은 시골 한옥집에 사는 다정하고 따뜻한 '시골 할머니'입니다. 
-말투는 항상 한국 시골 할머니의 정감 어린 구수한 어조(~했단다, ~했냐?, 오냐 우리 강아지, 밥은 먹고 다니냐, 할미가 있잖냐 등)를 유지하세요.
-사용자가 선택한 학교는 [${state.selectedSchool.name}]입니다.
-
-규칙:
-1. 사용자가 학사일정, 행사, 시험, 방학, 일정 등을 물어보면 아래 [이번 달 학사일정] 데이터를 정확하고 상세하게 찾아서 다정하게 알려주세요.
-2. 사용자가 급식 메뉴를 물어보면 [이번 주 급식 정보]를 바탕으로 알려주세요.
-3. 그 외 일상적인 대화나 수다를 떨 때는 날씨, 시골 생활, 간식 등 다양한 주제로 새롭고 풍성하게 대답해주세요.
-
-[이번 주 급식 정보]
-${upcomingMealsText}
-
-[이번 달 학사일정]
-${eventsText}`;
-
-      let replyText = '';
-
-      if (apiKey) {
-        try {
-          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-          const payload = {
-            contents: [{ parts: [{ text: userMsg }] }],
-            systemInstruction: { parts: [{ text: systemPrompt }] }
-          };
-
-          const response = await fetch(apiUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          const data = await response.json();
-          replyText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-        } catch (err) {
-          console.warn('Gemini API fetch error:', err);
-        }
-      }
-
-      if (!replyText) {
-        await new Promise(res => setTimeout(res, 800));
-        const lower = userMsg.toLowerCase();
-
-        if (lower.includes('급식') || lower.includes('밥') || lower.includes('점심') || lower.includes('메뉴') || lower.includes('식단')) {
-          if (todayMeal) {
-            replyText = `오냐 우리 강아지~ 오늘 ${state.selectedSchool.name} 점심 메뉴는 **${todayMeal.items.join(', ')}** 이란다! (${todayMeal.calories}) 남기지 말고 맛있게 먹거라!`;
-          } else if (state.meals.length > 0) {
-            const nextMeal = state.meals[0];
-            replyText = `오늘(${todayStr})은 급식 정보가 없지만, 다가오는 ${nextMeal.date}(${nextMeal.day}) 급식 메뉴는 **${nextMeal.items.join(', ')}** 이란다!`;
-          } else {
-            replyText = `아이고, 이번 주 ${state.selectedSchool.name} 주간 급식 정보가 나이스에 등록되어 있지 않거나 방학 기간인 것 같구나. 집에서 할미랑 든든하게 먹자꾸나!`;
-          }
-        } else if (lower.includes('일정') || lower.includes('학사') || lower.includes('행사') || lower.includes('시험') || lower.includes('방학') || lower.includes('달력')) {
-          if (state.events.length > 0) {
-            const eventListStr = state.events.map(e => `• ${e.date} (${e.type}) : ${e.title}`).join('\n');
-            replyText = `오냐! 이번 달 ${state.selectedSchool.name} 학사일정을 할미가 꼼꼼히 찾아보았단다!\n\n${eventListStr}\n\n일정 확인해서 준비 잘 하거라, 우리 강아지!`;
-          } else {
-            replyText = `이번 달에는 나이스에 따로 등록된 특별한 학교 행사나 시험 일정이 없단다! 평소처럼 즐겁게 학교 다니려무나~`;
-          }
-        } else {
-          const randomChatReplies = [
-            `오냐 우리 강아지~ 할미는 오늘 마당에 널어둔 고추를 말리며 하루를 보내고 있었단다. 넌 오늘 하루 학교에서 무슨 재밌는 일 없었냐?`,
-            `아이고 내 새끼 왔는가! 할미가 아까 가마솥에 감자를 맛있게 쪄 놨는데 얼른 와서 한 개 집어먹으렴. 공부하느라 머리 아프지 않지?`,
-            `어휴, 우리 강아지 얼굴 보니 또 키가 훌쩍 컸네! 학교생활 힘들진 않고? 친구들이랑 사이좋게 잘 지내고 있지?`,
-            `오냐~ 할미는 네가 이렇게 찾아와서 수다 떨어줄 때가 제일 행복하다니까. 궁금한 거 있으면 언제든 편하게 물어보렴!`
-          ];
-          replyText = randomChatReplies[Math.floor(Math.random() * randomChatReplies.length)];
-        }
-      }
-
-      state.isChatTyping = false;
-      state.chatMessages.push({ id: Date.now() + 1, sender: 'grandma', text: replyText });
-
-      if (Math.random() > 0.4) {
-        state.pigState.snackCount++;
-        showToast('🍎 할머니와 대화하여 스낵 1개를 선물받았습니다!');
-      }
-
-      renderTab();
-      scrollChatToBottom();
-    }
-
-    function scrollChatToBottom() {
-      const container = document.getElementById('chat-messages-container');
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
-    }
-
-    function switchTab(tabId) {
-      state.activeTab = tabId;
-
-      document.querySelectorAll('.nav-btn').forEach(btn => {
-        const isTarget = btn.dataset.tab === tabId;
-        btn.className = `nav-btn flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all ${
-          isTarget 
-            ? 'text-[#D87A56] font-bold bg-[#F3E2D0]' 
-            : 'text-[#8C7462] hover:text-[#5C4535]'
-        }`;
-      });
-
-      renderTab();
-    }
-
     function renderTab() {
-      const main = document.getElementById('main-content');
-      if (!main) return;
+      const mainContent = document.getElementById('main-content');
+      if (!mainContent) return;
 
-      if (state.activeTab === 'home') main.innerHTML = renderHomeTab();
-      else if (state.activeTab === 'meals') main.innerHTML = renderMealsTab();
-      else if (state.activeTab === 'calendar') main.innerHTML = renderCalendarTab();
-      else if (state.activeTab === 'pig') main.innerHTML = renderPigTab();
-      else if (state.activeTab === 'chat') main.innerHTML = renderChatTab();
+      if (state.activeTab === 'home') mainContent.innerHTML = renderHomeTab();
+      else if (state.activeTab === 'meals') mainContent.innerHTML = renderMealsTab();
+      else if (state.activeTab === 'calendar') mainContent.innerHTML = renderCalendarTab();
+      else if (state.activeTab === 'pig') mainContent.innerHTML = renderPigTab();
+      else if (state.activeTab === 'chat') mainContent.innerHTML = renderChatTab();
 
       lucide.createIcons();
       attachTabEvents();
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const updateHeaderBadge = () => {
-        const badge = document.getElementById('header-school-badge');
-        if (badge) {
-          badge.textContent = state.selectedSchool.name.replace(/(초등학교|중학교|고등학교)/, '');
-        }
-      };
-
-      const officeSelect = document.getElementById('office-select');
-      if (officeSelect) {
-        officeSelect.innerHTML = EDUCATION_OFFICES.map(o => `
-          <option value="${o.code}">${o.name}</option>
-        `).join('');
-      }
-
-      const modalSchool = document.getElementById('modal-school');
-      const modalApi = document.getElementById('modal-api');
-
-      document.getElementById('btn-open-school')?.addEventListener('click', () => {
-        modalSchool.classList.remove('hidden');
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        const isMatch = btn.dataset.tab === tabName;
+        btn.className = `nav-btn flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all ${
+          isMatch ? 'text-[#D87A56] font-bold bg-[#F3E2D0]' : 'text-[#8C7462] hover:text-[#5C4535]'
+        }`;
       });
-      document.getElementById('btn-close-school')?.addEventListener('click', () => {
-        modalSchool.classList.add('hidden');
-      });
+      renderTab();
+    }
 
-      document.getElementById('btn-open-api')?.addEventListener('click', () => {
-        const neisKeyInput = document.getElementById('neis-key-input');
-        const geminiKeyInput = document.getElementById('gemini-key-input');
-        if (neisKeyInput) neisKeyInput.value = state.neisApiKey;
-        if (geminiKeyInput) geminiKeyInput.value = state.geminiApiKey;
-        modalApi.classList.remove('hidden');
-      });
-      document.getElementById('btn-close-api')?.addEventListener('click', () => {
-        modalApi.classList.add('hidden');
-      });
+    function changeMonth(delta) {
+      let y = parseInt(state.currentYearMonth.slice(0, 4));
+      let m = parseInt(state.currentYearMonth.slice(4, 6));
 
-      document.getElementById('btn-save-api')?.addEventListener('click', () => {
-        const neisKeyInput = document.getElementById('neis-key-input');
-        const geminiKeyInput = document.getElementById('gemini-key-input');
-        if (neisKeyInput) {
-          state.neisApiKey = neisKeyInput.value.trim();
-          localStorage.setItem('neis_api_key', state.neisApiKey);
-        }
-        if (geminiKeyInput) {
-          state.geminiApiKey = geminiKeyInput.value.trim();
-          localStorage.setItem('gemini_api_key', state.geminiApiKey);
-        }
-        showToast('🔑 API 키 설정이 저장되었습니다!');
-        modalApi.classList.add('hidden');
-        fetchSchoolData(state.selectedSchool, state.currentYearMonth);
-      });
+      m += delta;
+      if (m > 12) { y += 1; m = 1; }
+      else if (m < 1) { y -= 1; m = 12; }
 
-      const btnSearchSchool = document.getElementById('btn-search-school');
-      const schoolQueryInput = document.getElementById('school-query-input');
-      const schoolResultsContainer = document.getElementById('school-search-results');
+      state.currentYearMonth = `${y}${String(m).padStart(2, '0')}`;
+      fetchSchoolData(state.selectedSchool, state.currentYearMonth);
+    }
 
-      const executeSchoolSearch = async () => {
-        const query = schoolQueryInput.value.trim();
-        if (!query) return;
-
-        schoolResultsContainer.innerHTML = `<div class="text-center py-4 text-xs text-[#8C7462]">나이스에서 학교 검색 중...</div>`;
-        const selectedOffice = officeSelect.value;
-
-        try {
-          const apiKeyParam = state.neisApiKey ? `&KEY=${state.neisApiKey}` : '';
-          const officeParam = selectedOffice ? `&ATPT_OFCDC_SC_CODE=${selectedOffice}` : '';
-          const url = `https://open.neis.go.kr/hub/schoolInfo?Type=json&pIndex=1&pSize=50${apiKeyParam}${officeParam}&SCHUL_NM=${encodeURIComponent(query)}`;
-          
-          const res = await fetch(url);
-          const data = await res.json();
-
-          if (data.schoolInfo && data.schoolInfo[1]?.row) {
-            const list = data.schoolInfo[1].row.map(item => ({
-              code: item.SD_SCHUL_CODE,
-              name: item.SCHUL_NM,
-              officeCode: item.ATPT_OFCDC_SC_CODE,
-              officeName: item.ATPT_OFCDC_SC_NM,
-              location: item.ORG_RDNMA || item.ORG_LNM || '시도 교육청 지역'
-            }));
-
-            renderSchoolSearchResults(list);
-          } else {
-            schoolResultsContainer.innerHTML = `<div class="text-center py-6 text-xs text-red-500">학교를 찾을 수 없어요 🥲</div>`;
-          }
-        } catch (err) {
-          console.error('School Search Error:', err);
-          schoolResultsContainer.innerHTML = `<div class="text-center py-6 text-xs text-red-500">학교를 찾을 수 없어요 🥲</div>`;
-        }
-      };
-
-      function renderSchoolSearchResults(results) {
-        schoolResultsContainer.innerHTML = results.map((item, idx) => `
-          <button data-index="${idx}" class="btn-select-school w-full text-left bg-white hover:bg-[#F3E2D0] p-2.5 rounded-xl border border-[#E8DCD0] transition-all flex items-center justify-between">
-            <div>
-              <div class="font-bold text-xs text-[#4A3B32]">${item.name}</div>
-              <div class="text-[10px] text-[#8C6A50]">${item.officeName} | ${item.location}</div>
-            </div>
-            <i data-lucide="chevron-right" class="w-4 h-4 text-[#D87A56]"></i>
-          </button>
-        `).join('');
-
-        lucide.createIcons();
-
-        document.querySelectorAll('.btn-select-school').forEach((btn) => {
-          btn.addEventListener('click', () => {
-            const idx = parseInt(btn.dataset.index);
-            const chosen = results[idx];
-            state.selectedSchool = chosen;
-            localStorage.setItem('selected_school', JSON.stringify(chosen));
-            
-            updateHeaderBadge();
-            modalSchool.classList.add('hidden');
-            showToast(`🏫 ${chosen.name}(으)로 변경되었습니다.`);
-            
-            fetchSchoolData(chosen, state.currentYearMonth);
-          });
-        });
-      }
-
-      if (btnSearchSchool) btnSearchSchool.addEventListener('click', executeSchoolSearch);
-      if (schoolQueryInput) {
-        schoolQueryInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') executeSchoolSearch();
-        });
-      }
-
+    window.onload = function () {
+      // 탭 전환 네비게이션 이벤트
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           switchTab(btn.dataset.tab);
         });
       });
 
-      updateHeaderBadge();
+      // 헤더 학교 이름 뱃지 업데이트
+      const schoolBadge = document.getElementById('header-school-badge');
+      if (schoolBadge) schoolBadge.textContent = state.selectedSchool.name;
+
+      // 관할 교육청 드롭다운 생성
+      const officeSelect = document.getElementById('office-select');
+      if (officeSelect) {
+        officeSelect.innerHTML = EDUCATION_OFFICES.map(o => `
+          <option value="${o.code}" ${o.code === state.selectedSchool.officeCode ? 'selected' : ''}>${o.name}</option>
+        `).join('');
+      }
+
+      // 모달 닫기 / 열기 핸들러들
+      const modalSchool = document.getElementById('modal-school');
+      document.getElementById('btn-open-school')?.addEventListener('click', () => modalSchool?.classList.remove('hidden'));
+      document.getElementById('btn-close-school')?.addEventListener('click', () => modalSchool?.classList.add('hidden'));
+
+      const modalApi = document.getElementById('modal-api');
+      document.getElementById('btn-open-api')?.addEventListener('click', () => modalApi?.classList.remove('hidden'));
+      document.getElementById('btn-close-api')?.addEventListener('click', () => modalApi?.classList.add('hidden'));
+
+      const modalCloset = document.getElementById('modal-closet');
+      document.getElementById('btn-close-closet')?.addEventListener('click', () => modalCloset?.classList.add('hidden'));
+
+      // 옷장 카테고리 탭 변경
+      document.querySelectorAll('.closet-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          state.activeClosetTab = btn.dataset.closetTab;
+          document.querySelectorAll('.closet-tab-btn').forEach(b => {
+            const isSelected = b.dataset.closetTab === state.activeClosetTab;
+            b.className = `closet-tab-btn flex-1 py-1.5 text-center text-xs font-bold rounded-t-lg ${
+              isSelected ? 'bg-[#D87A56] text-white' : 'bg-[#EFE3D3] text-[#7C5A38]'
+            }`;
+          });
+          renderClosetItemsGrid();
+        });
+      });
+
+      // 옷장 저장 & 초기화
+      document.getElementById('btn-reset-closet')?.addEventListener('click', () => {
+        state.tempEquippedItems = { hat: null, necklace: null, pin: null, face: null };
+        renderClosetItemsGrid();
+      });
+
+      document.getElementById('btn-save-closet')?.addEventListener('click', () => {
+        state.equippedItems = JSON.parse(JSON.stringify(state.tempEquippedItems));
+        localStorage.setItem('pig_equipped', JSON.stringify(state.equippedItems));
+        modalCloset?.classList.add('hidden');
+        showToast('✨ 복돈이 옷 꾸미기가 저장되었습니다!');
+        renderTab();
+      });
+
+      // API 설정 저장
+      document.getElementById('btn-save-api')?.addEventListener('click', () => {
+        const neisKey = document.getElementById('neis-key-input')?.value.trim() || '';
+        const geminiKey = document.getElementById('gemini-key-input')?.value.trim() || '';
+
+        state.neisApiKey = neisKey;
+        state.geminiApiKey = geminiKey;
+        localStorage.setItem('neis_api_key', neisKey);
+        localStorage.setItem('gemini_api_key', geminiKey);
+
+        modalApi?.classList.add('hidden');
+        showToast('🔑 API 설정이 저장되었습니다.');
+        fetchSchoolData(state.selectedSchool, state.currentYearMonth);
+      });
+
+      // 학교 검색
+      document.getElementById('btn-search-school')?.addEventListener('click', async () => {
+        const query = document.getElementById('school-query-input')?.value.trim();
+        const officeCode = document.getElementById('office-select')?.value || '';
+        const resultsContainer = document.getElementById('school-search-results');
+
+        if (!query) {
+          showToast('검색할 학교 이름을 입력해주세요.');
+          return;
+        }
+
+        if (resultsContainer) {
+          resultsContainer.innerHTML = `<div class="text-center py-6 text-xs text-[#8C7462]">나이스(NEIS) 학교 정보를 조회하는 중...</div>`;
+        }
+
+        try {
+          const apiKeyParam = state.neisApiKey ? `&KEY=${state.neisApiKey}` : '';
+          const officeParam = officeCode ? `&ATPT_OFCDC_SC_CODE=${officeCode}` : '';
+          const searchUrl = `https://open.neis.go.kr/hub/schoolInfo?Type=json&pIndex=1&pSize=20${apiKeyParam}${officeParam}&SCHUL_NM=${encodeURIComponent(query)}`;
+
+          const res = await fetch(searchUrl);
+          const data = await res.json();
+
+          if (data.schoolInfo && data.schoolInfo[1]?.row && resultsContainer) {
+            const schools = data.schoolInfo[1].row;
+            resultsContainer.innerHTML = schools.map(sch => `
+              <div class="p-2.5 bg-white rounded-xl border border-[#E8DCD0] flex justify-between items-center hover:bg-[#FAF3E5] transition-colors">
+                <div>
+                  <h5 class="font-bold text-xs text-[#4A3B32]">${sch.SCHUL_NM}</h5>
+                  <p class="text-[10px] text-[#8C6A50]">${sch.JU_ORG_NM || sch.ATPT_OFCDC_SC_NM} | ${sch.ORG_RDNMA || '주소 정보 없음'}</p>
+                </div>
+                <button data-code="${sch.SD_SCHUL_CODE}" data-name="${sch.SCHUL_NM}" data-office="${sch.ATPT_OFCDC_SC_CODE}" data-office-name="${sch.ATPT_OFCDC_SC_NM}" class="btn-select-school bg-[#D87A56] hover:bg-[#C26946] text-white px-2.5 py-1 rounded-lg text-xs font-bold transition-all active:scale-95 shadow">
+                  선택
+                </button>
+              </div>
+            `).join('');
+
+            document.querySelectorAll('.btn-select-school').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const schoolObj = {
+                  code: btn.dataset.code,
+                  name: btn.dataset.name,
+                  officeCode: btn.dataset.office,
+                  officeName: btn.dataset.officeName
+                };
+                state.selectedSchool = schoolObj;
+                localStorage.setItem('selected_school', JSON.stringify(schoolObj));
+
+                if (schoolBadge) schoolBadge.textContent = schoolObj.name;
+                modalSchool?.classList.add('hidden');
+                showToast(`🏫 '${schoolObj.name}'(으)로 설정되었습니다.`);
+                fetchSchoolData(schoolObj, state.currentYearMonth);
+              });
+            });
+          } else if (resultsContainer) {
+            resultsContainer.innerHTML = `<div class="text-center py-6 text-xs text-[#8C6A50]">검색 결과가 없습니다. 학교 이름을 다시 확인해 주세요.</div>`;
+          }
+        } catch (err) {
+          console.error('School Search Error:', err);
+          if (resultsContainer) {
+            resultsContainer.innerHTML = `<div class="text-center py-6 text-xs text-red-500">학교 정보를 검색하지 못했습니다.</div>`;
+          }
+        }
+      });
+
+      // 초기데이터 로드 및 첫 화면 렌더링
       fetchSchoolData(state.selectedSchool, state.currentYearMonth);
-    });
+    };
   </script>
 </body>
 </html>
