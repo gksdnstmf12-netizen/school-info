@@ -78,6 +78,14 @@
     }
     .animate-belly-up { animation: bellyUp 0.8s ease-in-out; }
 
+    /* 화남(지진) 애니메이션 */
+    @keyframes shakeAngry {
+      0%, 100% { transform: scale(1.1) translateX(0); }
+      10%, 30%, 50%, 70%, 90% { transform: scale(1.15) translateX(-8px) rotate(-5deg); filter: drop-shadow(0 0 10px rgba(255,0,0,0.5)); }
+      20%, 40%, 60%, 80% { transform: scale(1.15) translateX(8px) rotate(5deg); filter: drop-shadow(0 0 10px rgba(255,0,0,0.5)); }
+    }
+    .animate-shake-angry { animation: shakeAngry 0.6s ease-in-out infinite; }
+
     ::-webkit-scrollbar {
       width: 5px;
     }
@@ -181,6 +189,7 @@
       </button>
     </nav>
 
+    <!-- 학교 변경 모달 -->
     <div id="modal-school" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-fadeIn">
       <div class="bg-[#FAF5ED] border border-[#E0D0C0] rounded-3xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative">
         <button id="btn-close-school" class="absolute top-4 right-4 text-[#8C6A50] hover:text-[#4A3B32] p-1 rounded-full bg-white/50">
@@ -214,6 +223,7 @@
       </div>
     </div>
 
+    <!-- 복돈이 옷장 모달 -->
     <div id="modal-closet" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-fadeIn">
       <div class="bg-[#FFFDF9] border-2 border-[#C8A268] rounded-3xl w-full max-w-sm p-4 space-y-3 shadow-2xl relative max-h-[90vh] flex flex-col">
         <div class="flex justify-between items-center border-b border-[#EADBC8] pb-2">
@@ -262,6 +272,7 @@
       </div>
     </div>
 
+    <!-- API 설정 모달 -->
     <div id="modal-api" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-fadeIn">
       <div class="bg-[#FAF5ED] border border-[#E0D0C0] rounded-3xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative">
         <button id="btn-close-api" class="absolute top-4 right-4 text-[#8C6A50] hover:text-[#4A3B32] p-1 rounded-full bg-white/50">
@@ -302,6 +313,7 @@
       </div>
     </div>
 
+    <!-- 토스트 컨테이너 -->
     <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center gap-2 w-full max-w-xs px-4"></div>
 
   </div>
@@ -399,6 +411,22 @@
       ]
     };
 
+    // 할머니 넌센스 퀴즈 모음
+    const NONSENSE_QUIZZES = [
+      { q: "세상에서 가장 뜨거운 과일은?", a: "천도복숭아" },
+      { q: "왕이 넘어지면 뭘까?", a: "킹콩" },
+      { q: "신발이 화나면 어떻게 될까?", a: "신발끈" },
+      { q: "오리가 얼면 뭐가 될까?", a: "언덕" },
+      { q: "얼음이 죽으면?", a: "다이빙" },
+      { q: "소가 웃으면 뭐라고 할까?", a: "우하하" },
+      { q: "바나나가 웃으면?", a: "바나나킥" },
+      { q: "할아버지가 가장 좋아하는 돈은?", a: "할머니" },
+      { q: "세상에서 제일 장사를 잘 하는 동물은?", a: "판다" },
+      { q: "고기 먹을 때마다 따라오는 개는?", a: "이쑤시개" },
+      { q: "딸기가 도망가면?", a: "딸기쨈" },
+      { q: "세상에서 제일 지루한 중학교는?", a: "로딩중" }
+    ];
+
     const todayObj = new Date();
     const todayYYYY = todayObj.getFullYear();
     const todayMM = String(todayObj.getMonth() + 1).padStart(2, '0');
@@ -406,8 +434,9 @@
     const todayStr = `${todayYYYY}-${todayMM}-${todayDD}`;
     const todayYearMonth = `${todayYYYY}${todayMM}`;
 
-    function getThisWeekRange() {
-      const d = new Date();
+    // 특정 기준 날짜(baseDate)를 입력받아 해당 주의 월~금 범위 반환
+    function getWeekRange(baseDate) {
+      const d = new Date(baseDate);
       const day = d.getDay();
       const diffToMon = d.getDate() - day + (day === 0 ? -6 : 1);
       
@@ -423,9 +452,21 @@
       };
 
       return {
+        monDate: mon,
+        friDate: fri,
         fromYmd: formatDate(mon),
         toYmd: formatDate(fri)
       };
+    }
+
+    // 중복 방지 랜덤 퀴즈 가져오기
+    function getRandomQuiz() {
+      if (NONSENSE_QUIZZES.length <= 1) return NONSENSE_QUIZZES[0];
+      let newQuiz;
+      do {
+        newQuiz = NONSENSE_QUIZZES[Math.floor(Math.random() * NONSENSE_QUIZZES.length)];
+      } while (state.currentQuiz && newQuiz.q === state.currentQuiz.q);
+      return newQuiz;
     }
 
     const state = {
@@ -441,12 +482,21 @@
       })),
       neisApiKey: localStorage.getItem('neis_api_key') || '',
       geminiApiKey: localStorage.getItem('gemini_api_key') || '',
-      currentYearMonth: todayYearMonth,
-      isLoading: false,
-      hasError: false,
-      errorMessage: '',
+      
+      currentYearMonth: todayYearMonth, // 달력용
+      mealBaseDate: new Date(), // 급식 주간 기준일 (초기값: 오늘)
+      
+      isLoadingMeals: false,
+      hasMealError: false,
+      mealErrorMessage: '',
       meals: [],
+      
       events: [],
+      
+      // 퀴즈 상태
+      quizState: 'idle', // 'idle', 'asking', 'answered'
+      currentQuiz: null,
+
       showEffect: false,
       effectType: 'hearts',
       pigExpression: 'normal',
@@ -455,7 +505,7 @@
       pigClickCount: 0,
       pigClickTimer: null,
       isFarting: false,
-      feedbacks: [], // 게시판 데이터 상태 추가
+      feedbacks: [],
       
       equippedItems: JSON.parse(localStorage.getItem('pig_equipped') || JSON.stringify({
         hat: null,
@@ -512,6 +562,19 @@
         eyeLeft = `<rect x="4" y="5" width="2" height="2" fill="#1E293B" />`;
         eyeRight = `<rect x="10" y="5" width="2" height="2" fill="#1E293B" />`;
         mouth = `<circle cx="8" cy="9" r="1" fill="#991B1B" />`;
+      } else if (expression === 'angry') {
+        blushBg = `
+          <rect x="1" y="4" width="14" height="8" fill="#EF4444" opacity="0.7" />
+        `;
+        eyeLeft = `
+          <path d="M3,4 L6,6 L4,6 Z" fill="#1E293B" />
+          <rect x="4" y="6" width="2" height="1" fill="#1E293B" />
+        `;
+        eyeRight = `
+          <path d="M13,4 L10,6 L12,6 Z" fill="#1E293B" />
+          <rect x="10" y="6" width="2" height="1" fill="#1E293B" />
+        `;
+        mouth = `<rect x="6" y="9" width="4" height="1" fill="#7F1D1D" />`;
       } else if (expression === 'heart') {
         eyeLeft = `
           <rect x="3" y="4" width="1" height="1" fill="#E11D48" />
@@ -586,55 +649,55 @@
       }
 
       let hatGraphic = '';
-      if (items.hat === 'hat_straw') hatGraphic = `<polygon points="1,2 15,2 13,0 3,0" fill="#EAB308" /><rect x="3" y="1" width="10" height="1" fill="#CA8A04" />`;
-      else if (items.hat === 'hat_party') hatGraphic = `<polygon points="8,0 4,3 12,3" fill="#EC4899" /><circle cx="8" cy="0" r="0.8" fill="#FDE047" />`;
-      else if (items.hat === 'hat_grad') hatGraphic = `<polygon points="8,-1 1,1 8,3 15,1" fill="#1E293B" /><rect x="7" y="2" width="2" height="1" fill="#1E293B" />`;
-      else if (items.hat === 'hat_crown') hatGraphic = `<polygon points="3,2 5,0 8,2 11,0 13,2 13,3 3,3" fill="#F59E0B" /><circle cx="8" cy="1" r="0.5" fill="#EF4444" />`;
-      else if (items.hat === 'hat_frog') hatGraphic = `<rect x="3" y="0" width="10" height="3" fill="#22C55E" rx="1" /><circle cx="5" cy="0" r="1" fill="#FFF" /><circle cx="11" cy="0" r="1" fill="#FFF" />`;
-      else if (items.hat === 'hat_bear') hatGraphic = `<rect x="3" y="0" width="10" height="3" fill="#B45309" rx="1" /><circle cx="3" cy="0" r="1" fill="#B45309" /><circle cx="13" cy="0" r="1" fill="#B45309" />`;
-      else if (items.hat === 'hat_chef') hatGraphic = `<path d="M4,2 C4,-1 12,-1 12,2 Z" fill="#FFFFFF" /><rect x="4" y="2" width="8" height="1" fill="#E2E8F0" />`;
-      else if (items.hat === 'hat_wizard') hatGraphic = `<polygon points="8,-2 3,2 13,2" fill="#6366F1" /><circle cx="8" cy="0" r="0.8" fill="#FDE047" />`;
-      else if (items.hat === 'hat_ribbon') hatGraphic = `<rect x="3" y="1" width="10" height="2" fill="#3B82F6" /><rect x="1" y="2" width="6" height="1" fill="#2563EB" />`;
-      else if (items.hat === 'hat_rural') hatGraphic = `<path d="M2,3 Q8,-1 14,3 Z" fill="#F43F5E" /><circle cx="8" cy="1" r="0.5" fill="#FFF" />`;
+      if (items.hat === 'hat_straw') hatGraphic = `<path d="M2,2 L14,2 L11,-0.5 L5,-0.5 Z" fill="#EAB308"/><rect x="4" y="1" width="8" height="1" fill="#CA8A04"/>`;
+      else if (items.hat === 'hat_party') hatGraphic = `<polygon points="8,-1 5,2.5 11,2.5" fill="#EC4899" /><circle cx="8" cy="-1" r="1.2" fill="#FDE047" />`;
+      else if (items.hat === 'hat_grad') hatGraphic = `<polygon points="8,-1.5 2,1 8,2.5 14,1" fill="#1E293B"/><rect x="6.5" y="2" width="3" height="1.5" fill="#1E293B"/><line x1="8" y1="0.5" x2="13" y2="1.5" stroke="#F59E0B" stroke-width="1"/><circle cx="8" cy="0.5" r="0.5" fill="#F59E0B"/>`;
+      else if (items.hat === 'hat_crown') hatGraphic = `<polygon points="3.5,3 3.5,-0.5 6,1.5 8,-1 10,1.5 12.5,-0.5 12.5,3" fill="#F59E0B"/><circle cx="8" cy="0.5" r="0.8" fill="#EF4444"/>`;
+      else if (items.hat === 'hat_frog') hatGraphic = `<rect x="4" y="-0.5" width="8" height="3" fill="#22C55E" rx="1.5" /><circle cx="5.5" cy="-0.5" r="1.5" fill="#22C55E" /><circle cx="10.5" cy="-0.5" r="1.5" fill="#22C55E" /><circle cx="5.5" cy="-0.5" r="0.8" fill="#FFF"/><circle cx="5.5" cy="-0.5" r="0.4" fill="#000"/><circle cx="10.5" cy="-0.5" r="0.8" fill="#FFF"/><circle cx="10.5" cy="-0.5" r="0.4" fill="#000"/>`;
+      else if (items.hat === 'hat_bear') hatGraphic = `<rect x="4" y="-0.5" width="8" height="3" fill="#92400E" rx="1.5" /><circle cx="4.5" cy="-1" r="1.5" fill="#92400E" /><circle cx="11.5" cy="-1" r="1.5" fill="#92400E" /><circle cx="4.5" cy="-1" r="0.7" fill="#FCD34D"/><circle cx="11.5" cy="-1" r="0.7" fill="#FCD34D"/>`;
+      else if (items.hat === 'hat_chef') hatGraphic = `<path d="M4,2 C3,-2 13,-2 12,2 Z" fill="#FFFFFF" /><rect x="4" y="2" width="8" height="1" fill="#CBD5E1" />`;
+      else if (items.hat === 'hat_wizard') hatGraphic = `<polygon points="8,-2.5 3,3 13,3" fill="#6366F1"/><path d="M2,3 L14,3" stroke="#4F46E5" stroke-width="1.5"/><circle cx="8" cy="0" r="1" fill="#FDE047"/>`;
+      else if (items.hat === 'hat_ribbon') hatGraphic = `<rect x="4" y="0" width="8" height="3" fill="#3B82F6" rx="1"/><rect x="2" y="2" width="6" height="1" fill="#2563EB"/>`;
+      else if (items.hat === 'hat_rural') hatGraphic = `<path d="M3,3 C4,-1 12,-1 13,3 Z" fill="#F43F5E" /><circle cx="6" cy="1" r="0.6" fill="#FFF"/><circle cx="10" cy="1" r="0.6" fill="#FFF"/><circle cx="8" cy="2" r="0.6" fill="#FFF"/>`;
 
       let neckGraphic = '';
-      if (items.necklace === 'neck_pearl') neckGraphic = `<circle cx="5" cy="12" r="0.7" fill="#FFF" /><circle cx="8" cy="12.5" r="0.7" fill="#FFF" /><circle cx="11" cy="12" r="0.7" fill="#FFF" />`;
-      else if (items.necklace === 'neck_gold') neckGraphic = `<rect x="5" y="12" width="6" height="1" fill="#F59E0B" /><rect x="7.5" y="12.5" width="1" height="1" fill="#D97706" />`;
-      else if (items.necklace === 'neck_heart') neckGraphic = `<rect x="6" y="12" width="4" height="0.8" fill="#F43F5E" /><path d="M8,12.5 L7,13.5 L8,14.5 L9,13.5 Z" fill="#EF4444" />`;
-      else if (items.necklace === 'neck_bowtie') neckGraphic = `<polygon points="6,11.5 8,12 6,12.5" fill="#DC2626" /><polygon points="10,11.5 8,12 10,12.5" fill="#DC2626" />`;
-      else if (items.necklace === 'neck_bell') neckGraphic = `<rect x="5" y="12" width="6" height="0.8" fill="#DC2626" /><circle cx="8" cy="13" r="1" fill="#F59E0B" />`;
-      else if (items.necklace === 'neck_scarf') neckGraphic = `<path d="M4,11 Q8,13 12,11 L11,13 Q8,14 5,13 Z" fill="#10B981" />`;
-      else if (items.necklace === 'neck_flower') neckGraphic = `<circle cx="8" cy="12" r="0.8" fill="#EC4899" /><circle cx="6" cy="12" r="0.6" fill="#F472B6" /><circle cx="10" cy="12" r="0.6" fill="#F472B6" />`;
-      else if (items.necklace === 'neck_bone') neckGraphic = `<rect x="6.5" y="12" width="3" height="0.8" fill="#FFF" /><circle cx="6.5" cy="12" r="0.6" fill="#FFF" /><circle cx="9.5" cy="12" r="0.6" fill="#FFF" />`;
-      else if (items.necklace === 'neck_feather') neckGraphic = `<path d="M5,11 Q8,13 11,11" stroke="#38BDF8" stroke-width="0.8" fill="none" />`;
-      else if (items.necklace === 'neck_magic') neckGraphic = `<circle cx="8" cy="12.5" r="1" fill="#8B5CF6" />`;
+      if (items.necklace === 'neck_pearl') neckGraphic = `<circle cx="4" cy="11.5" r="0.8" fill="#FFF"/><circle cx="6" cy="12" r="0.8" fill="#FFF"/><circle cx="8" cy="12.2" r="0.8" fill="#FFF"/><circle cx="10" cy="12" r="0.8" fill="#FFF"/><circle cx="12" cy="11.5" r="0.8" fill="#FFF"/>`;
+      else if (items.necklace === 'neck_gold') neckGraphic = `<path d="M4,11.5 Q8,12.5 12,11.5" stroke="#FBBF24" stroke-width="1.5" fill="none" stroke-linecap="round"/><circle cx="8" cy="12" r="1" fill="#F59E0B"/><circle cx="8" cy="12" r="0.4" fill="#FEF3C7"/>`;
+      else if (items.necklace === 'neck_heart') neckGraphic = `<path d="M4,11.5 Q8,12.5 12,11.5" stroke="#F43F5E" stroke-width="1" fill="none"/><polygon points="8,13.5 7,12 9,12" fill="#EF4444"/><circle cx="7.5" cy="12" r="0.6" fill="#EF4444"/><circle cx="8.5" cy="12" r="0.6" fill="#EF4444"/>`;
+      else if (items.necklace === 'neck_bowtie') neckGraphic = `<polygon points="6,11.5 8,12.5 6,13.5" fill="#DC2626"/><polygon points="10,11.5 8,12.5 10,13.5" fill="#DC2626"/><circle cx="8" cy="12.5" r="0.6" fill="#991B1B"/>`;
+      else if (items.necklace === 'neck_bell') neckGraphic = `<path d="M4,11.5 Q8,12 12,11.5" stroke="#EF4444" stroke-width="1.5" fill="none"/><circle cx="8" cy="12.5" r="1.2" fill="#FBBF24"/><line x1="8" y1="12.5" x2="8" y2="13.5" stroke="#B45309" stroke-width="0.5"/><circle cx="8" cy="13.5" r="0.3" fill="#B45309"/>`;
+      else if (items.necklace === 'neck_scarf') neckGraphic = `<path d="M3,11 Q8,13 13,11 L13,12 Q8,14 3,12 Z" fill="#10B981"/><polygon points="11,11 10,14 12,14" fill="#059669"/>`;
+      else if (items.necklace === 'neck_flower') neckGraphic = `<path d="M4,11.5 Q8,12.5 12,11.5" stroke="#34D399" stroke-width="1" fill="none"/><circle cx="8" cy="12.5" r="1.2" fill="#F472B6"/><circle cx="8" cy="12.5" r="0.5" fill="#FDE047"/><circle cx="5.5" cy="12" r="0.8" fill="#F472B6"/><circle cx="5.5" cy="12" r="0.3" fill="#FDE047"/><circle cx="10.5" cy="12" r="0.8" fill="#F472B6"/><circle cx="10.5" cy="12" r="0.3" fill="#FDE047"/>`;
+      else if (items.necklace === 'neck_bone') neckGraphic = `<path d="M4,11.5 Q8,12.5 12,11.5" stroke="#9CA3AF" stroke-width="1.5" fill="none"/><rect x="6.5" y="11.5" width="3" height="1.2" fill="#FFF"/><circle cx="6.5" cy="11.5" r="0.8" fill="#FFF"/><circle cx="6.5" cy="12.7" r="0.8" fill="#FFF"/><circle cx="9.5" cy="11.5" r="0.8" fill="#FFF"/><circle cx="9.5" cy="12.7" r="0.8" fill="#FFF"/>`;
+      else if (items.necklace === 'neck_feather') neckGraphic = `<path d="M4,11.5 Q8,13 12,11.5" stroke="#38BDF8" stroke-width="2" fill="none" stroke-dasharray="2 1.5"/>`;
+      else if (items.necklace === 'neck_magic') neckGraphic = `<path d="M4,11.5 Q8,12.5 12,11.5" stroke="#9333EA" stroke-width="1" fill="none"/><circle cx="8" cy="12.5" r="1.5" fill="#A855F7"/><circle cx="8" cy="12.5" r="0.6" fill="#E9D5FF"/>`;
 
       let pinGraphic = '';
-      if (items.pin === 'pin_red_ribbon') pinGraphic = `<circle cx="12" cy="2" r="1" fill="#EF4444" /><polygon points="11,1 12,2 11,3" fill="#DC2626" /><polygon points="13,1 12,2 13,3" fill="#DC2626" />`;
-      else if (items.pin === 'pin_star') pinGraphic = `<polygon points="12,1 12.5,2 13.5,2 12.7,2.5 13,3.5 12,3 11,3.5 11.3,2.5 10.5,2 11.5,2" fill="#FBBF24" />`;
-      else if (items.pin === 'pin_sprout') pinGraphic = `<path d="M12,2 Q10,0 10,-1 Q12,0 12,2 Z" fill="#22C55E" /><path d="M12,2 Q14,0 14,-1 Q12,0 12,2 Z" fill="#22C55E" />`;
-      else if (items.pin === 'pin_cherry') pinGraphic = `<circle cx="11.5" cy="3" r="0.8" fill="#EF4444" /><circle cx="13" cy="3" r="0.8" fill="#EF4444" /><path d="M12.2,1 L11.5,3 M12.2,1 L13,3" stroke="#15803D" stroke-width="0.5" />`;
-      else if (items.pin === 'pin_heart') pinGraphic = `<path d="M12,2 C11,1 10,2 12,3.5 C14,2 13,1 12,2 Z" fill="#EC4899" />`;
-      else if (items.pin === 'pin_clover') pinGraphic = `<circle cx="11.5" cy="1.5" r="0.6" fill="#16A34A" /><circle cx="12.5" cy="1.5" r="0.6" fill="#16A34A" /><circle cx="12" cy="2.2" r="0.6" fill="#16A34A" />`;
-      else if (items.pin === 'pin_eyes') pinGraphic = `<circle cx="11.5" cy="2" r="0.8" fill="#FFF" /><circle cx="11.5" cy="2" r="0.4" fill="#000" /><circle cx="13" cy="2" r="0.8" fill="#FFF" /><circle cx="13" cy="2" r="0.4" fill="#000" />`;
-      else if (items.pin === 'pin_feather') pinGraphic = `<path d="M11,3 Q13,0 14,-1" stroke="#F472B6" stroke-width="1" />`;
-      else if (items.pin === 'pin_sparkle') pinGraphic = `<path d="M12,0 L12.5,1.5 L14,2 L12.5,2.5 L12,4 L11.5,2.5 L10,2 L11.5,1.5 Z" fill="#FDE047" />`;
-      else if (items.pin === 'pin_carrot') pinGraphic = `<polygon points="12,1 11,3 13,3" fill="#F97316" /><rect x="11.5" y="0" width="1" height="1" fill="#16A34A" />`;
+      if (items.pin === 'pin_red_ribbon') pinGraphic = `<polygon points="10.5,0.5 13,2 10.5,3.5" fill="#DC2626"/><polygon points="15.5,0.5 13,2 15.5,3.5" fill="#DC2626"/><circle cx="13" cy="2" r="0.8" fill="#991B1B"/>`;
+      else if (items.pin === 'pin_star') pinGraphic = `<polygon points="13,0 13.5,1.5 15,1.5 13.8,2.5 14.2,4 13,3 11.8,4 12.2,2.5 11,1.5 12.5,1.5" fill="#FBBF24"/>`;
+      else if (items.pin === 'pin_sprout') pinGraphic = `<path d="M12.5,2 Q10,0 11.5,-0.5 Q12.5,1 12.5,2 Z" fill="#22C55E"/><path d="M12.5,2 Q15,0 13.5,-0.5 Q12.5,1 12.5,2 Z" fill="#22C55E"/><line x1="12.5" y1="2" x2="12.5" y2="3.5" stroke="#22C55E" stroke-width="1.5"/>`;
+      else if (items.pin === 'pin_cherry') pinGraphic = `<path d="M12.5,1.5 Q11.5,2.5 11.5,3.5" stroke="#15803D" stroke-width="1" fill="none"/><path d="M12.5,1.5 Q14,2.5 14,3.5" stroke="#15803D" stroke-width="1" fill="none"/><circle cx="11.5" cy="4" r="1.2" fill="#EF4444"/><circle cx="14" cy="4" r="1.2" fill="#EF4444"/><line x1="11.5" y1="1" x2="13.5" y2="1.5" stroke="#15803D" stroke-width="1.2"/>`;
+      else if (items.pin === 'pin_heart') pinGraphic = `<polygon points="13,3.5 11.5,1.5 14.5,1.5" fill="#EC4899"/><circle cx="12.2" cy="1.5" r="0.8" fill="#EC4899"/><circle cx="13.8" cy="1.5" r="0.8" fill="#EC4899"/>`;
+      else if (items.pin === 'pin_clover') pinGraphic = `<circle cx="12" cy="1" r="1" fill="#16A34A"/><circle cx="14" cy="1" r="1" fill="#16A34A"/><circle cx="12" cy="3" r="1" fill="#16A34A"/><circle cx="14" cy="3" r="1" fill="#16A34A"/><rect x="12.5" y="1.5" width="1" height="2.5" fill="#16A34A"/>`;
+      else if (items.pin === 'pin_eyes') pinGraphic = `<circle cx="11.5" cy="2" r="1.2" fill="#FFF"/><circle cx="11.5" cy="2" r="0.6" fill="#000"/><circle cx="14.5" cy="2" r="1.2" fill="#FFF"/><circle cx="14.5" cy="2" r="0.6" fill="#000"/>`;
+      else if (items.pin === 'pin_feather') pinGraphic = `<path d="M11,3 Q13.5,-1 15,0 Q14.5,1 12,4 Z" fill="#F472B6"/><path d="M11,3 Q13.5,-1 15,0" stroke="#DB2777" stroke-width="0.5" fill="none"/>`;
+      else if (items.pin === 'pin_sparkle') pinGraphic = `<polygon points="13,-0.5 13.5,1.5 15.5,2 13.5,2.5 13,4.5 12.5,2.5 10.5,2 12.5,1.5" fill="#FDE047"/>`;
+      else if (items.pin === 'pin_carrot') pinGraphic = `<polygon points="12.5,1 11.5,3.5 13.5,3.5" fill="#F97316"/><polygon points="11,3.5 12.5,5 14,3.5" fill="#F97316"/><rect x="12" y="0" width="1" height="1.5" fill="#16A34A"/>`;
 
       let faceGraphic = '';
-      if (items.face === 'face_heart_blush') faceGraphic = `<path d="M3,7 C2.5,6.5 2,7 3,7.8 C4,7 3.5,6.5 3,7 Z" fill="#EC4899" /><path d="M13,7 C12.5,6.5 12,7 13,7.8 C14,7 13.5,6.5 13,7 Z" fill="#EC4899" />`;
-      else if (items.face === 'face_pink_blush') faceGraphic = `<circle cx="3" cy="7.5" r="1" fill="#F472B6" opacity="0.7" /><circle cx="13" cy="7.5" r="1" fill="#F472B6" opacity="0.7" />`;
-      else if (items.face === 'face_cat_whisker') faceGraphic = `<line x1="1" y1="7" x2="3" y2="7.5" stroke="#475569" stroke-width="0.5" /><line x1="1" y1="8" x2="3" y2="8" stroke="#475569" stroke-width="0.5" /><line x1="13" y1="7.5" x2="15" y2="7" stroke="#475569" stroke-width="0.5" /><line x1="13" y1="8" x2="15" y2="8" stroke="#475569" stroke-width="0.5" />`;
-      else if (items.face === 'face_gentle_stache') faceGraphic = `<path d="M5,10 Q6.5,8.5 8,10 Q9.5,8.5 11,10" stroke="#1E293B" stroke-width="0.8" fill="none" />`;
-      else if (items.face === 'face_doodle') faceGraphic = `<path d="M2,6 Q4,8 3,9" stroke="#334155" stroke-width="0.5" fill="none" />`;
-      else if (items.face === 'face_swirl') faceGraphic = `<circle cx="3" cy="7.5" r="0.8" stroke="#DB2777" stroke-width="0.4" fill="none" /><circle cx="13" cy="7.5" r="0.8" stroke="#DB2777" stroke-width="0.4" fill="none" />`;
-      else if (items.face === 'face_glasses') faceGraphic = `<rect x="3" y="4.5" width="3" height="2" stroke="#000" stroke-width="0.5" fill="none" /><rect x="10" y="4.5" width="3" height="2" stroke="#000" stroke-width="0.5" fill="none" /><line x1="6" y1="5.5" x2="10" y2="5.5" stroke="#000" stroke-width="0.5" />`;
-      else if (items.face === 'face_tear') faceGraphic = `<path d="M12,6 C11.5,7 12.5,7.5 12,8 C11.5,7.5 12.5,7 12,6 Z" fill="#38BDF8" />`;
-      else if (items.face === 'face_bandaid') faceGraphic = `<rect x="11.5" y="6.5" width="3" height="1.5" fill="#FDE68A" rx="0.3" transform="rotate(-15 13 7)" />`;
-      else if (items.face === 'face_cat_nose') faceGraphic = `<polygon points="8,7 7.2,8 8.8,8" fill="#EC4899" />`;
+      if (items.face === 'face_heart_blush') faceGraphic = `<polygon points="3,8 2,7 4,7" fill="#EC4899"/><circle cx="2.5" cy="7" r="0.6" fill="#EC4899"/><circle cx="3.5" cy="7" r="0.6" fill="#EC4899"/><polygon points="13,8 12,7 14,7" fill="#EC4899"/><circle cx="12.5" cy="7" r="0.6" fill="#EC4899"/><circle cx="13.5" cy="7" r="0.6" fill="#EC4899"/>`;
+      else if (items.face === 'face_pink_blush') faceGraphic = `<ellipse cx="3" cy="7.5" rx="1.5" ry="1" fill="#F472B6" opacity="0.9"/><ellipse cx="13" cy="7.5" rx="1.5" ry="1" fill="#F472B6" opacity="0.9"/>`;
+      else if (items.face === 'face_cat_whisker') faceGraphic = `<line x1="0" y1="7" x2="2.5" y2="7.5" stroke="#475569" stroke-width="0.8"/><line x1="0" y1="8.5" x2="2.5" y2="8" stroke="#475569" stroke-width="0.8"/><line x1="16" y1="7" x2="13.5" y2="7.5" stroke="#475569" stroke-width="0.8"/><line x1="16" y1="8.5" x2="13.5" y2="8" stroke="#475569" stroke-width="0.8"/>`;
+      else if (items.face === 'face_gentle_stache') faceGraphic = `<path d="M5,10 Q6.5,8.5 8,10 Q9.5,8.5 11,10" stroke="#1E293B" stroke-width="1.2" fill="none" stroke-linecap="round"/>`;
+      else if (items.face === 'face_doodle') faceGraphic = `<path d="M1.5,6 Q3,8 1.5,9 Q4,10.5 2,11" stroke="#334155" stroke-width="0.8" fill="none"/>`;
+      else if (items.face === 'face_swirl') faceGraphic = `<circle cx="3" cy="7.5" r="1.2" stroke="#DB2777" stroke-width="0.8" fill="none"/><circle cx="3" cy="7.5" r="0.4" fill="#DB2777"/><circle cx="13" cy="7.5" r="1.2" stroke="#DB2777" stroke-width="0.8" fill="none"/><circle cx="13" cy="7.5" r="0.4" fill="#DB2777"/>`;
+      else if (items.face === 'face_glasses') faceGraphic = `<rect x="2.5" y="4.5" width="4.5" height="3" stroke="#1E293B" stroke-width="0.8" fill="none" rx="0.5"/><rect x="9" y="4.5" width="4.5" height="3" stroke="#1E293B" stroke-width="0.8" fill="none" rx="0.5"/><line x1="7" y1="6" x2="9" y2="6" stroke="#1E293B" stroke-width="0.8"/>`;
+      else if (items.face === 'face_tear') faceGraphic = `<path d="M13.5,6 Q14.5,8 13.5,9 Q12.5,8 13.5,6 Z" fill="#38BDF8"/>`;
+      else if (items.face === 'face_bandaid') faceGraphic = `<rect x="1.5" y="6.5" width="4" height="1.8" fill="#FDE68A" rx="0.5" transform="rotate(-15 3.5 7.4)"/><rect x="2.8" y="6.8" width="1.4" height="1.2" fill="#D97706" opacity="0.3" transform="rotate(-15 3.5 7.4)"/>`;
+      else if (items.face === 'face_cat_nose') faceGraphic = `<polygon points="8,7.5 6.5,9 9.5,9" fill="#EC4899"/>`;
 
       return `
-        <svg viewBox="0 0 16 16" class="${className} pixel-crisp drop-shadow-md">
+        <svg viewBox="0 -3 16 18" class="${className} pixel-crisp drop-shadow-md overflow-visible">
           <rect x="2" y="1" width="3" height="3" fill="#F472B6" />
           <rect x="3" y="2" width="1" height="1" fill="#F43F5E" />
           <rect x="11" y="1" width="3" height="3" fill="#F472B6" />
@@ -720,21 +783,17 @@
       return { items, allergyInfo };
     }
 
-    async function fetchSchoolData(school, yearMonthStr) {
-      state.isLoading = true;
-      state.hasError = false;
-      renderTab();
+    // 급식 데이터만 요청하는 함수 (주간 이동 시 사용)
+    async function fetchMealData(school, baseDate) {
+      state.isLoadingMeals = true;
+      state.hasMealError = false;
+      renderTab(); // 로딩 UI 표시
 
-      const year = yearMonthStr.slice(0, 4);
-      const month = yearMonthStr.slice(4, 6);
-      const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
-      const fromYmd = `${yearMonthStr}01`;
-      const toYmd = `${yearMonthStr}${String(lastDay).padStart(2, '0')}`;
       const apiKeyParam = state.neisApiKey ? `&KEY=${state.neisApiKey}` : '';
       const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
 
       try {
-        const weekRange = getThisWeekRange();
+        const weekRange = getWeekRange(baseDate);
         const mealUrl = `https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&pIndex=1&pSize=10${apiKeyParam}&ATPT_OFCDC_SC_CODE=${school.officeCode}&SD_SCHUL_CODE=${school.code}&MLSV_FROM_YMD=${weekRange.fromYmd}&MLSV_TO_YMD=${weekRange.toYmd}`;
         const mealRes = await fetch(mealUrl);
         const mealData = await mealRes.json();
@@ -764,9 +823,22 @@
         }
       } catch (err) {
         console.error('NEIS Meal API Fetch Error:', err);
-        state.hasError = true;
-        state.errorMessage = '데이터를 불러오지 못했습니다.';
+        state.hasMealError = true;
+        state.mealErrorMessage = '급식 데이터를 불러오지 못했습니다.';
       }
+
+      state.isLoadingMeals = false;
+      renderTab();
+    }
+
+    // 일정 데이터만 요청하는 함수 (월 변경 시 사용)
+    async function fetchCalendarData(school, yearMonthStr) {
+      const year = yearMonthStr.slice(0, 4);
+      const month = yearMonthStr.slice(4, 6);
+      const lastDay = new Date(parseInt(year), parseInt(month), 0).getDate();
+      const fromYmd = `${yearMonthStr}01`;
+      const toYmd = `${yearMonthStr}${String(lastDay).padStart(2, '0')}`;
+      const apiKeyParam = state.neisApiKey ? `&KEY=${state.neisApiKey}` : '';
 
       try {
         const schedUrl = `https://open.neis.go.kr/hub/SchoolSchedule?Type=json&pIndex=1&pSize=100${apiKeyParam}&ATPT_OFCDC_SC_CODE=${school.officeCode}&SD_SCHUL_CODE=${school.code}&AA_FROM_YMD=${fromYmd}&AA_TO_YMD=${toYmd}`;
@@ -798,9 +870,90 @@
       } catch (err) {
         console.error('NEIS Schedule API Fetch Error:', err);
       }
-
-      state.isLoading = false;
       renderTab();
+    }
+
+    // 최초 로딩 및 새로고침 시 모두 호출
+    async function fetchAllData() {
+      fetchMealData(state.selectedSchool, state.mealBaseDate);
+      fetchCalendarData(state.selectedSchool, state.currentYearMonth);
+    }
+
+    // 퀴즈 UI 생성 함수
+    function getQuizUI() {
+      if (state.quizState === 'idle') {
+        return `
+          <p class="font-bold text-sm text-[#4A3A2C] leading-snug mb-1">
+            "아이고~ 밥 먹기 전에 할미랑 수수께끼 하나 할 텐가?"
+          </p>
+          <button id="btn-start-quiz" class="mt-1 bg-[#D87A56] hover:bg-[#C26946] text-white text-xs px-3 py-1.5 rounded-lg font-bold transition-all active:scale-95 shadow-sm inline-flex items-center gap-1">
+            <i data-lucide="play" class="w-3.5 h-3.5"></i> 네! 할래요!
+          </button>
+        `;
+      } else if (state.quizState === 'asking') {
+        return `
+          <span class="text-[10px] font-bold text-white bg-[#D83A3A] px-2 py-0.5 rounded-md inline-block mb-1">할머니의 퀴즈</span>
+          <p class="font-extrabold text-[13px] text-[#4A3A2C] leading-snug mb-2">
+            Q. ${state.currentQuiz.q}
+          </p>
+          <button id="btn-answer-quiz" class="bg-[#7C9473] hover:bg-[#6A8062] text-white text-xs px-3 py-1.5 rounded-lg font-bold transition-all active:scale-95 shadow-sm">정답 보기</button>
+        `;
+      } else {
+        return `
+          <p class="font-bold text-sm text-[#4A3A2C] leading-snug mb-1">
+            A. 정답은 <span class="text-[#D87A56] text-base font-extrabold">'${state.currentQuiz.a}'</span> 란다! 껄껄~
+          </p>
+          <button id="btn-next-quiz" class="mt-1 bg-[#E2D5C3] hover:bg-[#D5C6B2] text-[#5C3A21] text-xs px-3 py-1.5 rounded-lg font-bold transition-all active:scale-95 shadow-sm inline-flex items-center gap-1">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> 한 번 더?
+          </button>
+        `;
+      }
+    }
+
+    // 복돈이 효과 이모티콘 HTML 헬퍼 함수
+    function getEffectAreaHTML(type) {
+      if (type === 'fart') {
+        return `
+          <div class="animate-float-1 text-[80px] absolute top-[40%] right-[10%]">💨</div>
+          <div class="animate-float-2 text-[60px] absolute top-[50%] right-[20%]">💨</div>
+          <div class="text-3xl absolute top-[20%] left-1/2 -translate-x-1/2 bg-red-500 text-white font-extrabold px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
+            뽀오옹~! 😳
+          </div>
+        `;
+      } else if (type === 'hearts') {
+        return `
+          <div class="animate-float-1 text-5xl absolute top-[35%] left-[20%]">💖</div>
+          <div class="animate-float-2 text-6xl absolute top-[25%] left-1/2 -translate-x-1/2">❤️</div>
+          <div class="animate-float-3 text-5xl absolute top-[35%] right-[20%]">💕</div>
+        `;
+      } else if (type === 'stars') {
+        return `
+          <div class="animate-float-1 text-5xl absolute top-[35%] left-[20%]">⭐</div>
+          <div class="animate-float-2 text-6xl absolute top-[25%] left-1/2 -translate-x-1/2">✨</div>
+          <div class="animate-float-3 text-5xl absolute top-[35%] right-[20%]">🌟</div>
+        `;
+      } else if (type === 'notes') {
+        return `
+          <div class="animate-float-1 text-5xl absolute top-[35%] left-[20%]">🎶</div>
+          <div class="animate-float-2 text-6xl absolute top-[25%] left-1/2 -translate-x-1/2">🎵</div>
+          <div class="animate-float-3 text-5xl absolute top-[35%] right-[20%]">🎼</div>
+        `;
+      } else if (type === 'sleep') {
+        return `
+          <div class="animate-float-1 text-5xl absolute top-[35%] left-[25%]">💤</div>
+          <div class="animate-float-2 text-6xl absolute top-[30%] right-[25%]">💤</div>
+        `;
+      } else if (type === 'fire') {
+        return `
+          <div class="animate-float-1 text-[100px] absolute top-[30%] left-[10%]">🔥</div>
+          <div class="animate-float-2 text-[120px] absolute top-[20%] left-1/2 -translate-x-1/2">🔥</div>
+          <div class="animate-float-3 text-[100px] absolute top-[30%] right-[10%]">🔥</div>
+          <div class="text-2xl absolute top-[15%] left-1/2 -translate-x-1/2 bg-red-700 text-white font-extrabold px-4 py-2 rounded-full shadow-lg border-2 border-yellow-400 whitespace-nowrap">
+            앗 뜨거워!! 그만 눌러!! 😡
+          </div>
+        `;
+      }
+      return '';
     }
 
     function renderHomeTab() {
@@ -827,20 +980,13 @@
             </button>
           </div>
 
-          <div class="bg-[#FAF2E4] border border-[#E3D1BE] rounded-2xl p-4 shadow-sm relative overflow-hidden flex items-center gap-4">
-            <div class="w-20 h-20 rounded-2xl bg-[#FFE4D6] border-2 border-[#D87A56] flex items-center justify-center p-2 flex-shrink-0 shadow">
+          <div class="bg-[#FAF2E4] border border-[#E3D1BE] rounded-2xl p-4 shadow-sm relative overflow-hidden flex items-start gap-4 transition-all">
+            <div class="w-20 h-20 rounded-2xl bg-[#FFE4D6] border-2 border-[#D87A56] flex items-center justify-center p-2 flex-shrink-0 shadow relative">
               ${getPixelGrandmaSvg('w-full h-full')}
+              ${state.quizState === 'asking' ? '<span class="absolute -top-2 -right-2 text-xl animate-bounce">❓</span>' : ''}
             </div>
-            <div>
-              <span class="text-[11px] font-bold text-[#D87A56] bg-[#FCECE3] px-2 py-0.5 rounded-md inline-block mb-1">
-                할머니의 한마디
-              </span>
-              <p class="font-bold text-sm text-[#4A3A2C] leading-snug">
-                "아이고~ 우리 강아지 왔는가? 손 씻고 밥 먹을 준비 하거라!"
-              </p>
-              <p class="text-xs text-[#8A715D] mt-1">
-                ${state.selectedSchool.name} 급식과 학사일정을 가져왔단다.
-              </p>
+            <div class="flex-1">
+              ${getQuizUI()}
             </div>
           </div>
 
@@ -848,22 +994,22 @@
             <div class="flex items-center justify-between border-b border-dashed border-[#E0D0C0] pb-2">
               <div class="flex items-center gap-2">
                 <span class="bg-[#7C9473] text-white text-xs px-2.5 py-1 rounded-lg font-bold">
-                  오늘의 급식
+                  가장 가까운 급식
                 </span>
-                <span class="text-xs text-[#8C6A50] font-medium">${todayStr} (${todayMeal ? todayMeal.day : '오늘'})</span>
+                <span class="text-xs text-[#8C6A50] font-medium">${todayMeal ? todayMeal.date : '이번 주'}</span>
               </div>
               <button id="btn-go-meals" class="text-xs text-[#D87A56] font-bold flex items-center hover:underline">
                 주간 급식 전체보기 <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-0.5"></i>
               </button>
             </div>
 
-            ${state.isLoading ? `
+            ${state.isLoadingMeals ? `
               <div class="text-center py-8 text-xs text-[#8C7462] animate-pulse">
-                👵 나이스에서 오늘의 급식을 가져오고 있단다...
+                👵 나이스에서 급식을 가져오고 있단다...
               </div>
-            ` : state.hasError ? `
+            ` : state.hasMealError ? `
               <div class="text-center py-6 text-xs text-red-500 bg-[#FAF5ED] rounded-xl border border-[#E8DCD0]">
-                ${state.errorMessage}
+                ${state.mealErrorMessage}
               </div>
             ` : todayMeal ? `
               <div class="flex gap-3 items-center">
@@ -888,7 +1034,7 @@
               </div>
             ` : `
               <div class="text-center py-6 text-xs text-[#8C6A50] bg-[#FAF5ED] rounded-xl border border-[#E8DCD0]">
-                🍙 급식이 없습니다.
+                🍙 이번 주 급식이 없습니다.
               </div>
             `}
           </div>
@@ -920,30 +1066,47 @@
     }
 
     function renderMealsTab() {
+      const weekInfo = getWeekRange(state.mealBaseDate);
+      const formatTitleDate = (d) => `${d.getMonth()+1}월 ${d.getDate()}일`;
+
       return `
         <div class="space-y-4 animate-fadeIn">
           <div class="bg-[#FAF0E6] p-3.5 rounded-2xl border border-[#E8D8C8] flex items-center justify-between">
             <div>
-              <h2 class="font-bold text-base text-[#4A3B32]">이번 주 주간 급식 식단표</h2>
-              <p class="text-xs text-[#8C6A50]">월요일부터 금요일까지 정성 가득한 급식</p>
+              <h2 class="font-bold text-base text-[#4A3B32]">주간 급식 식단표</h2>
+              <p class="text-xs text-[#8C6A50]">원하는 날짜의 급식을 확인해보세요</p>
             </div>
-            <span class="text-xs bg-[#7C9473] text-white px-2.5 py-1 rounded-lg font-bold max-w-[140px] truncate">
+            <span class="text-xs bg-[#7C9473] text-white px-2.5 py-1 rounded-lg font-bold max-w-[120px] truncate">
               ${state.selectedSchool.name}
             </span>
           </div>
 
-          ${state.isLoading ? `
+          <div class="flex items-center justify-between bg-white border border-[#E2D5C3] rounded-2xl p-2 shadow-sm">
+            <button id="btn-prev-week" class="p-2 hover:bg-[#FAF3E5] rounded-xl transition-colors text-[#5C4535] active:scale-95">
+              <i data-lucide="chevron-left" class="w-5 h-5"></i>
+            </button>
+            <div class="text-center px-2">
+              <h3 class="font-extrabold text-sm text-[#4A3B32]">
+                 ${formatTitleDate(weekInfo.monDate)} ~ ${formatTitleDate(weekInfo.friDate)}
+              </h3>
+            </div>
+            <button id="btn-next-week" class="p-2 hover:bg-[#FAF3E5] rounded-xl transition-colors text-[#5C4535] active:scale-95">
+              <i data-lucide="chevron-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+
+          ${state.isLoadingMeals ? `
             <div class="bg-white rounded-2xl p-12 text-center text-xs text-[#8C7462] border border-[#E2D5C3] space-y-2">
               <div class="w-8 h-8 border-2 border-[#D87A56] border-t-transparent rounded-full animate-spin mx-auto"></div>
-              <p>나이스(NEIS)에서 이번 주 주간 급식 정보를 끌어오고 있습니다...</p>
+              <p>나이스(NEIS)에서 해당 주간 급식 정보를 끌어오고 있습니다...</p>
             </div>
-          ` : state.hasError ? `
+          ` : state.hasMealError ? `
             <div class="bg-white rounded-2xl p-8 text-center text-xs text-red-500 border border-[#E2D5C3]">
-              ${state.errorMessage}
+              ${state.mealErrorMessage}
             </div>
           ` : state.meals.length === 0 ? `
             <div class="bg-white rounded-2xl p-8 text-center text-xs text-[#8C7462] border border-[#E2D5C3]">
-              🍙 급식이 없습니다.
+              🍙 이 주간에는 급식 정보가 없습니다.
             </div>
           ` : `
             <div class="space-y-3.5">
@@ -1081,28 +1244,7 @@
             </div>
 
             <div id="pig-effect-area" class="absolute inset-0 pointer-events-none z-30 flex items-center justify-center ${state.showEffect ? '' : 'hidden'}">
-              ${state.effectType === 'fart' ? `
-                <div class="animate-float-1 text-5xl absolute bottom-24 right-12">💨</div>
-                <div class="animate-float-2 text-4xl absolute bottom-28 right-20">💨</div>
-                <div class="text-3xl absolute top-12 left-1/2 -translate-x-1/2 bg-red-500 text-white font-extrabold px-3 py-1 rounded-full shadow-lg">
-                  뽀오옹~! 😳
-                </div>
-              ` : state.effectType === 'hearts' ? `
-                <div class="animate-float-1 text-4xl absolute top-12 left-16">💖</div>
-                <div class="animate-float-2 text-5xl absolute top-8 left-1/2 -translate-x-1/2">❤️</div>
-                <div class="animate-float-3 text-4xl absolute top-12 right-16">💕</div>
-              ` : state.effectType === 'stars' ? `
-                <div class="animate-float-1 text-4xl absolute top-12 left-16">⭐</div>
-                <div class="animate-float-2 text-5xl absolute top-8 left-1/2 -translate-x-1/2">✨</div>
-                <div class="animate-float-3 text-4xl absolute top-12 right-12">🌟</div>
-              ` : state.effectType === 'notes' ? `
-                <div class="animate-float-1 text-3xl absolute top-10 left-16">🎶</div>
-                <div class="animate-float-2 text-4xl absolute top-6 left-1/2 -translate-x-1/2">🎵</div>
-                <div class="animate-float-3 text-3xl absolute top-12 right-16">🎼</div>
-              ` : `
-                <div class="animate-float-1 text-3xl absolute top-10 left-1/3">💤</div>
-                <div class="animate-float-2 text-4xl absolute top-6 right-1/3">💤</div>
-              `}
+              ${getEffectAreaHTML(state.effectType)}
             </div>
 
             <div class="flex flex-col items-center justify-center my-auto relative z-20">
@@ -1200,7 +1342,6 @@
       `;
     }
 
-    // ===== 새롭게 추가된 게시판 렌더링 함수 =====
     function renderBoardMessages() {
       const container = document.getElementById('board-messages-container');
       if (!container) return;
@@ -1222,7 +1363,7 @@
     }
 
     function renderBoardTab() {
-      setTimeout(renderBoardMessages, 0); // DOM이 그려진 후 메시지 삽입
+      setTimeout(renderBoardMessages, 0);
       return `
         <div class="flex flex-col h-[72vh] animate-fadeIn">
           <div class="bg-[#FAF0E6] p-3 rounded-2xl border border-[#E8D8C8] flex items-center justify-between mb-3">
@@ -1233,6 +1374,18 @@
             <span class="text-[10px] bg-[#D87A56] text-white px-2 py-0.5 rounded font-bold">
               Firestore 연동
             </span>
+          </div>
+
+          <div class="bg-[#FFF0F0] border-2 border-[#FFA0A0] rounded-2xl p-4 mb-3 text-center shadow-sm relative overflow-hidden flex-shrink-0">
+            <div class="absolute -right-2 -bottom-4 opacity-20">
+              ${getPixelGrandmaSvg('w-20 h-20')}
+            </div>
+            <h3 class="font-extrabold text-[#D83A3A] text-[15px] mb-1.5 relative z-10 flex justify-center items-center gap-1.5">
+              <span>👵</span> 할머니가 고운말만 쓰라고 하셨다! <span>👵</span>
+            </h3>
+            <p class="text-[11px] text-[#A05050] font-bold relative z-10 break-keep">
+              바르고 예쁜 말로 우리 모두 기분 좋은 공간을 만들자꾸나 💕
+            </p>
           </div>
 
           <div id="board-messages-container" class="flex-1 overflow-y-auto space-y-3 p-3 bg-[#FAF5ED] rounded-2xl border border-[#E8DCD0] mb-3">
@@ -1267,38 +1420,7 @@
       if (effectArea) {
         if (state.showEffect) {
           effectArea.classList.remove('hidden');
-          if (state.effectType === 'fart') {
-            effectArea.innerHTML = `
-              <div class="animate-float-1 text-5xl absolute bottom-24 right-12">💨</div>
-              <div class="animate-float-2 text-4xl absolute bottom-28 right-20">💨</div>
-              <div class="text-3xl absolute top-12 left-1/2 -translate-x-1/2 bg-red-500 text-white font-extrabold px-3 py-1 rounded-full shadow-lg">
-                뽀오옹~! 😳
-              </div>
-            `;
-          } else if (state.effectType === 'hearts') {
-            effectArea.innerHTML = `
-              <div class="animate-float-1 text-4xl absolute top-12 left-16">💖</div>
-              <div class="animate-float-2 text-5xl absolute top-8 left-1/2 -translate-x-1/2">❤️</div>
-              <div class="animate-float-3 text-4xl absolute top-12 right-16">💕</div>
-            `;
-          } else if (state.effectType === 'stars') {
-            effectArea.innerHTML = `
-              <div class="animate-float-1 text-4xl absolute top-12 left-16">⭐</div>
-              <div class="animate-float-2 text-5xl absolute top-8 left-1/2 -translate-x-1/2">✨</div>
-              <div class="animate-float-3 text-4xl absolute top-12 right-12">🌟</div>
-            `;
-          } else if (state.effectType === 'notes') {
-            effectArea.innerHTML = `
-              <div class="animate-float-1 text-3xl absolute top-10 left-16">🎶</div>
-              <div class="animate-float-2 text-4xl absolute top-6 left-1/2 -translate-x-1/2">🎵</div>
-              <div class="animate-float-3 text-3xl absolute top-12 right-16">🎼</div>
-            `;
-          } else {
-            effectArea.innerHTML = `
-              <div class="animate-float-1 text-3xl absolute top-10 left-1/3">💤</div>
-              <div class="animate-float-2 text-4xl absolute top-6 right-1/3">💤</div>
-            `;
-          }
+          effectArea.innerHTML = getEffectAreaHTML(state.effectType);
         } else {
           effectArea.classList.add('hidden');
         }
@@ -1350,7 +1472,7 @@
       if (btnRefresh) {
         btnRefresh.addEventListener('click', () => {
           showToast('🔄 데이터를 새로고침합니다.');
-          fetchSchoolData(state.selectedSchool, state.currentYearMonth);
+          fetchAllData();
         });
       }
 
@@ -1363,6 +1485,48 @@
           state.pigState.quote = '출석 보상으로 맛있는 스낵 2개를 받았단다! 꿀꿀!';
           showToast('🎁 출석 완료! 스낵 2개가 추가되었습니다.');
           renderTab();
+        });
+      }
+
+      const btnStartQuiz = document.getElementById('btn-start-quiz');
+      if (btnStartQuiz) {
+        btnStartQuiz.addEventListener('click', () => {
+          state.currentQuiz = getRandomQuiz();
+          state.quizState = 'asking';
+          renderTab();
+        });
+      }
+
+      const btnAnswerQuiz = document.getElementById('btn-answer-quiz');
+      if (btnAnswerQuiz) {
+        btnAnswerQuiz.addEventListener('click', () => {
+          state.quizState = 'answered';
+          renderTab();
+        });
+      }
+
+      const btnNextQuiz = document.getElementById('btn-next-quiz');
+      if (btnNextQuiz) {
+        btnNextQuiz.addEventListener('click', () => {
+          state.currentQuiz = getRandomQuiz();
+          state.quizState = 'asking';
+          renderTab();
+        });
+      }
+
+      const btnPrevWeek = document.getElementById('btn-prev-week');
+      if (btnPrevWeek) {
+        btnPrevWeek.addEventListener('click', () => {
+          state.mealBaseDate.setDate(state.mealBaseDate.getDate() - 7);
+          fetchMealData(state.selectedSchool, state.mealBaseDate);
+        });
+      }
+      
+      const btnNextWeek = document.getElementById('btn-next-week');
+      if (btnNextWeek) {
+        btnNextWeek.addEventListener('click', () => {
+          state.mealBaseDate.setDate(state.mealBaseDate.getDate() + 7);
+          fetchMealData(state.selectedSchool, state.mealBaseDate);
         });
       }
 
@@ -1391,8 +1555,37 @@
 
           if (state.pigClickTimer) clearTimeout(state.pigClickTimer);
 
-          if (state.pigClickCount >= 4) {
+          // 10번 클릭 시 매우 분노! (불꽃과 붉은 얼굴)
+          if (state.pigClickCount >= 10) {
             state.pigClickCount = 0;
+            state.isFarting = false;
+            state.showEffect = true;
+            state.effectType = 'fire';
+            state.pigExpression = 'angry';
+            state.pigSpeech = '그만 눌러!!! 화난다 꿀꿀!!!! 🔥😡🔥';
+
+            const svgContainer = document.getElementById('pig-svg-container');
+            if (svgContainer) {
+              svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart', 'animate-shake-angry');
+              void svgContainer.offsetWidth;
+              svgContainer.classList.add('animate-shake-angry');
+            }
+
+            updatePigUI();
+
+            setTimeout(() => {
+              // 애니메이션 종료 후 상태 원복
+              if (state.effectType === 'fire') {
+                state.showEffect = false;
+                state.pigExpression = 'normal';
+                state.pigSpeech = '휴... 진정했다 꿀꿀. 다음부턴 살살 눌러줘!';
+                updatePigUI();
+              }
+            }, 3000);
+            return;
+          } 
+          // 5번 클릭 시 방귀 뿡
+          else if (state.pigClickCount === 5) {
             state.isFarting = true;
             state.showEffect = true;
             state.effectType = 'fart';
@@ -1401,7 +1594,7 @@
 
             const svgContainer = document.getElementById('pig-svg-container');
             if (svgContainer) {
-              svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart');
+              svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart', 'animate-shake-angry');
               void svgContainer.offsetWidth;
               svgContainer.classList.add('animate-fart');
             }
@@ -1410,32 +1603,35 @@
 
             setTimeout(() => {
               state.isFarting = false;
-              state.showEffect = false;
-              state.pigExpression = 'normal';
-              state.pigSpeech = '히히... 방귀 뀐 건 비밀로 해줘! 🤫';
-              updatePigUI();
+              if (state.effectType === 'fart') {
+                state.showEffect = false;
+                state.pigExpression = 'normal';
+                state.pigSpeech = '히히... 방귀 뀐 건 비밀로 해줘! 🤫';
+                updatePigUI();
+              }
             }, 3000);
-            return;
+          } 
+          // 1~4, 6~9번 클릭 (평상시)
+          else {
+            if (!state.isFarting && state.effectType !== 'fire') {
+              const cuteQuotes = [
+                '꿀꿀! 오늘도 너랑 놀아서 정말 즐거워~ 🐷',
+                '배고프니까 사과 스낵 하나 주면 안 될까? 🍎',
+                '할머니가 만들어주신 누룽지가 먹고 싶어라~',
+                '내 이름은 복돈이! 복을 불러오는 아기 돼지야 ✨',
+                '헤헤, 쓰다듬어 주니까 기분이 너무 좋다쿠! 💕'
+              ];
+              state.pigSpeech = cuteQuotes[Math.floor(Math.random() * cuteQuotes.length)];
+              state.pigExpression = 'normal';
+              state.pigHoldingApple = false;
+              state.showEffect = false;
+              updatePigUI();
+            }
           }
 
           state.pigClickTimer = setTimeout(() => {
             state.pigClickCount = 0;
           }, 1500);
-
-          if (!state.isFarting) {
-            const cuteQuotes = [
-              '꿀꿀! 오늘도 너랑 놀아서 정말 즐거워~ 🐷',
-              '배고프니까 사과 스낵 하나 주면 안 될까? 🍎',
-              '할머니가 만들어주신 누룽지가 먹고 싶어라~',
-              '내 이름은 복돈이! 복을 불러오는 아기 돼지야 ✨',
-              '헤헤, 쓰다듬어 주니까 기분이 너무 좋다쿠! 💕'
-            ];
-            state.pigSpeech = cuteQuotes[Math.floor(Math.random() * cuteQuotes.length)];
-            state.pigExpression = 'normal';
-            state.pigHoldingApple = false;
-            state.showEffect = false;
-            updatePigUI();
-          }
         });
       }
 
@@ -1467,7 +1663,7 @@
           
           const svgContainer = document.getElementById('pig-svg-container');
           if (svgContainer) {
-            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart');
+            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart', 'animate-shake-angry');
             void svgContainer.offsetWidth;
             svgContainer.classList.add('animate-double-bounce');
           }
@@ -1475,10 +1671,12 @@
           updatePigUI();
 
           setTimeout(() => {
-            state.showEffect = false;
-            state.pigExpression = 'normal';
-            state.pigHoldingApple = false;
-            updatePigUI();
+            if (state.effectType === 'hearts') {
+              state.showEffect = false;
+              state.pigExpression = 'normal';
+              state.pigHoldingApple = false;
+              updatePigUI();
+            }
           }, 2500);
         });
       }
@@ -1494,7 +1692,7 @@
 
           const svgContainer = document.getElementById('pig-svg-container');
           if (svgContainer) {
-            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart');
+            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart', 'animate-shake-angry');
             void svgContainer.offsetWidth;
             svgContainer.classList.add('animate-wiggle-jump');
           }
@@ -1502,9 +1700,11 @@
           updatePigUI();
 
           setTimeout(() => {
-            state.showEffect = false;
-            state.pigExpression = 'normal';
-            updatePigUI();
+            if (state.effectType === 'hearts') {
+              state.showEffect = false;
+              state.pigExpression = 'normal';
+              updatePigUI();
+            }
           }, 2500);
         });
       }
@@ -1519,7 +1719,7 @@
 
           const svgContainer = document.getElementById('pig-svg-container');
           if (svgContainer) {
-            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart');
+            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart', 'animate-shake-angry');
             void svgContainer.offsetWidth;
             svgContainer.classList.add('animate-wiggle-jump');
           }
@@ -1527,9 +1727,11 @@
           updatePigUI();
 
           setTimeout(() => {
-            state.showEffect = false;
-            state.pigExpression = 'normal';
-            updatePigUI();
+            if (state.effectType === 'notes') {
+              state.showEffect = false;
+              state.pigExpression = 'normal';
+              updatePigUI();
+            }
           }, 2500);
         });
       }
@@ -1545,10 +1747,12 @@
           updatePigUI();
 
           setTimeout(() => {
-            state.showEffect = false;
-            state.pigExpression = 'normal';
-            state.pigSpeech = '하품~! 개운하게 잘 잤다! 꿀꿀!';
-            updatePigUI();
+            if (state.effectType === 'sleep') {
+              state.showEffect = false;
+              state.pigExpression = 'normal';
+              state.pigSpeech = '하품~! 개운하게 잘 잤다! 꿀꿀!';
+              updatePigUI();
+            }
           }, 3000);
         });
       }
@@ -1563,7 +1767,7 @@
 
           const svgContainer = document.getElementById('pig-svg-container');
           if (svgContainer) {
-            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart');
+            svgContainer.classList.remove('animate-double-bounce', 'animate-wiggle-jump', 'animate-belly-up', 'animate-fart', 'animate-shake-angry');
             void svgContainer.offsetWidth;
             svgContainer.classList.add('animate-belly-up');
           }
@@ -1571,9 +1775,11 @@
           updatePigUI();
 
           setTimeout(() => {
-            state.showEffect = false;
-            state.pigExpression = 'normal';
-            updatePigUI();
+            if (state.effectType === 'stars') {
+              state.showEffect = false;
+              state.pigExpression = 'normal';
+              updatePigUI();
+            }
           }, 2500);
         });
       }
@@ -1612,7 +1818,6 @@
         });
       }
 
-      // ===== 게시판 등록 이벤트 (Firestore 쓰기) =====
       const btnSubmitBoard = document.getElementById('btn-submit-board');
       const boardInput = document.getElementById('board-input-text');
       if (btnSubmitBoard && boardInput) {
@@ -1680,11 +1885,10 @@
       else if (m < 1) { y -= 1; m = 12; }
 
       state.currentYearMonth = `${y}${String(m).padStart(2, '0')}`;
-      fetchSchoolData(state.selectedSchool, state.currentYearMonth);
+      fetchCalendarData(state.selectedSchool, state.currentYearMonth);
     }
 
     window.onload = function () {
-      // ===== 게시판 데이터 실시간 조회 (Firestore 읽기) =====
       db.collection("feedbacks").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
         const newFeedbacks = [];
         snapshot.forEach(doc => {
@@ -1692,7 +1896,6 @@
         });
         state.feedbacks = newFeedbacks;
         
-        // 현재 활성 탭이 게시판이라면 메시지 영역만 리렌더링
         if (state.activeTab === 'board') {
           renderBoardMessages();
         }
@@ -1700,7 +1903,6 @@
         console.error("게시판 불러오기 오류:", error);
       });
 
-      // 탭 전환 네비게이션 이벤트
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           switchTab(btn.dataset.tab);
@@ -1765,7 +1967,7 @@
 
         modalApi?.classList.add('hidden');
         showToast('🔑 API 설정이 저장되었습니다.');
-        fetchSchoolData(state.selectedSchool, state.currentYearMonth);
+        fetchAllData();
       });
 
       document.getElementById('btn-search-school')?.addEventListener('click', async () => {
@@ -1818,7 +2020,7 @@
                 if (schoolBadge) schoolBadge.textContent = schoolObj.name;
                 modalSchool?.classList.add('hidden');
                 showToast(`🏫 '${schoolObj.name}'(으)로 설정되었습니다.`);
-                fetchSchoolData(schoolObj, state.currentYearMonth);
+                fetchAllData();
               });
             });
           } else if (resultsContainer) {
@@ -1832,7 +2034,7 @@
         }
       });
 
-      fetchSchoolData(state.selectedSchool, state.currentYearMonth);
+      fetchAllData();
     };
   </script>
 </body>
