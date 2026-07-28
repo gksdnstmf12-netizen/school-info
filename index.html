@@ -64,7 +64,6 @@
     <header class="bg-[#FAF0E6] p-4 border-b border-[#E8D8C8] sticky top-0 z-20 flex items-center justify-between shadow-sm">
       <div class="flex items-center space-x-2.5">
         <div class="w-10 h-10 rounded-full bg-[#D87A56] flex items-center justify-center p-1 shadow-inner border-2 border-[#FFF0E0]">
-          <!-- SVG Pixel Grandma -->
           <svg viewBox="0 0 20 20" class="w-full h-full pixel-crisp">
             <rect x="8" y="1" width="4" height="2" fill="#D6D3D1" />
             <rect x="7" y="2" width="6" height="2" fill="#E7E5E4" />
@@ -109,6 +108,9 @@
       </div>
 
       <div class="flex items-center gap-1.5">
+        <button id="btn-sound-toggle" title="효과음 켜기/끄기" class="p-2 bg-[#F5E6D3] hover:bg-[#EBD9C3] text-[#5C3A21] rounded-xl border border-[#D0B8A0] transition-all active:scale-95 shadow-sm">
+          <i data-lucide="volume-2" id="sound-icon" class="w-4 h-4"></i>
+        </button>
         <button id="btn-open-api" title="API Key 설정" class="p-2 bg-[#F5E6D3] hover:bg-[#EBD9C3] text-[#5C3A21] rounded-xl border border-[#D0B8A0] transition-all active:scale-95 shadow-sm">
           <i data-lucide="settings" class="w-4 h-4"></i>
         </button>
@@ -163,7 +165,6 @@
         <div class="space-y-1">
           <label class="text-xs font-bold text-[#6E5A4C]">관할 교육청 선택 (선택 사항)</label>
           <select id="office-select" class="w-full bg-white border border-[#D0B8A0] rounded-xl px-3 py-2 text-xs text-[#4A3B32] focus:outline-none focus:border-[#D87A56]">
-            <!-- Education offices populated via JS -->
           </select>
         </div>
 
@@ -230,6 +231,83 @@
   </div>
 
   <script>
+    // Web Audio Sound Generator Utility
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    }
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        initAudio();
+        if (!audioCtx) return;
+
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        if (type === 'click') {
+          // 가벼운 버튼 클릭음 (짧은 톡 소리)
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(450, now);
+          osc.frequency.exponentialRampToValueAtTime(200, now + 0.05);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+          osc.start(now);
+          osc.stop(now + 0.05);
+        } else if (type === 'coin' || type === 'checkin') {
+          // 동전 획득 및 출석체크 보상음 (기분 좋은 높은음)
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(587.33, now); // D5
+          osc.frequency.setValueAtTime(880, now + 0.08); // A5
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+          osc.start(now);
+          osc.stop(now + 0.25);
+        } else if (type === 'feed') {
+          // 먹이 주기 냠냠 소리 (아래위로 움직이는 효과)
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(300, now);
+          osc.frequency.linearRampToValueAtTime(450, now + 0.1);
+          osc.frequency.linearRampToValueAtTime(350, now + 0.2);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.22);
+          osc.start(now);
+          osc.stop(now + 0.22);
+        } else if (type === 'pet') {
+          // 쓰다듬기 아기자기한 소리
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, now); // C5
+          osc.frequency.linearRampToValueAtTime(659.25, now + 0.1); // E5
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+          osc.start(now);
+          osc.stop(now + 0.2);
+        } else if (type === 'send') {
+          // 메시지 전송음
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(400, now);
+          osc.frequency.exponentialRampToValueAtTime(700, now + 0.1);
+          gain.gain.setValueAtTime(0.15, now);
+          gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+          osc.start(now);
+          osc.stop(now + 0.12);
+        }
+      } catch (e) {
+        console.warn('Audio play error:', e);
+      }
+    }
+
     const EDUCATION_OFFICES = [
       { code: '', name: '전체 (전국 학교)' },
       { code: 'B10', name: '서울특별시교육청' },
@@ -259,7 +337,6 @@
       'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80'
     ];
 
-    // Get Today's Date String YYYY-MM-DD
     const todayObj = new Date();
     const todayYYYY = todayObj.getFullYear();
     const todayMM = String(todayObj.getMonth() + 1).padStart(2, '0');
@@ -267,7 +344,6 @@
     const todayStr = `${todayYYYY}-${todayMM}-${todayDD}`;
     const todayYearMonth = `${todayYYYY}${todayMM}`;
 
-    // Global Application State
     const state = {
       activeTab: 'home',
       hasCheckedIn: false,
@@ -280,13 +356,13 @@
       })),
       neisApiKey: localStorage.getItem('neis_api_key') || '',
       geminiApiKey: localStorage.getItem('gemini_api_key') || '',
-      currentYearMonth: todayYearMonth, // YYYYMM
+      currentYearMonth: todayYearMonth,
       isLoading: false,
-      meals: [],      // Fetched NEIS meals
-      events: [],     // Fetched NEIS schedules
-      showEffect: false, // true during animations
-      effectType: 'hearts', // 'hearts' or 'stars'
-      pigExpression: 'normal', // 'normal', 'heart', 'star'
+      meals: [],
+      events: [],
+      showEffect: false,
+      effectType: 'hearts',
+      pigExpression: 'normal',
       pigState: {
         name: '복돈이',
         level: 3,
@@ -315,7 +391,6 @@
       `;
 
       if (expression === 'heart') {
-        // Red Heart Eyes
         eyeLeft = `
           <rect x="3" y="4" width="1" height="1" fill="#E11D48" />
           <rect x="5" y="4" width="1" height="1" fill="#E11D48" />
@@ -331,7 +406,6 @@
           <rect x="10" y="7" width="1" height="1" fill="#E11D48" />
         `;
       } else if (expression === 'star') {
-        // Yellow Star Eyes
         eyeLeft = `
           <rect x="4" y="3" width="1" height="5" fill="#D97706" />
           <rect x="2" y="5" width="5" height="1" fill="#D97706" />
@@ -415,7 +489,6 @@
       }, 2500);
     }
 
-    // Clean dish name from NEIS HTML and allergy tags (e.g. 1.2.5.6.)
     function cleanDishName(rawHtml) {
       if (!rawHtml) return [];
       return rawHtml
@@ -439,7 +512,6 @@
       const apiKeyParam = state.neisApiKey ? `&KEY=${state.neisApiKey}` : '';
       const daysOfWeek = ['일', '월', '화', '수', '목', '금', '토'];
 
-      // 1. Fetch Meal Service Info
       try {
         const mealUrl = `https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&pIndex=1&pSize=100${apiKeyParam}&ATPT_OFCDC_SC_CODE=${school.officeCode}&SD_SCHUL_CODE=${school.code}&MLSV_FROM_YMD=${fromYmd}&MLSV_TO_YMD=${toYmd}`;
         const mealRes = await fetch(mealUrl);
@@ -472,7 +544,6 @@
         state.meals = [];
       }
 
-      // 2. Fetch School Schedule Info
       try {
         const schedUrl = `https://open.neis.go.kr/hub/SchoolSchedule?Type=json&pIndex=1&pSize=100${apiKeyParam}&ATPT_OFCDC_SC_CODE=${school.officeCode}&SD_SCHUL_CODE=${school.code}&AA_FROM_YMD=${fromYmd}&AA_TO_YMD=${toYmd}`;
         const schedRes = await fetch(schedUrl);
@@ -514,7 +585,6 @@
 
       return `
         <div class="space-y-4 animate-fadeIn">
-          <!-- Daily Attendance Card -->
           <div class="bg-[#FFF8E7] border-2 border-[#E8A87C] rounded-2xl p-3 shadow-sm flex items-center justify-between">
             <div class="flex items-center gap-2.5">
               <div class="w-9 h-9 rounded-xl bg-[#FDE047] flex items-center justify-center text-lg shadow-sm">
@@ -534,7 +604,6 @@
             </button>
           </div>
 
-          <!-- Grandma's Banner -->
           <div class="bg-[#FAF2E4] border border-[#E3D1BE] rounded-2xl p-4 shadow-sm relative overflow-hidden flex items-center gap-4">
             <div class="w-20 h-20 rounded-2xl bg-[#FFE4D6] border-2 border-[#D87A56] flex items-center justify-center p-2 flex-shrink-0 shadow">
               ${getPixelGrandmaSvg('w-full h-full')}
@@ -552,7 +621,6 @@
             </div>
           </div>
 
-          <!-- Today's Meal Card -->
           <div class="bg-white rounded-2xl p-4 border border-[#E2D5C3] shadow-sm space-y-3">
             <div class="flex items-center justify-between border-b border-dashed border-[#E0D0C0] pb-2">
               <div class="flex items-center gap-2">
@@ -595,7 +663,6 @@
             `}
           </div>
 
-          <!-- Pig Pet Mini Status -->
           <div class="bg-[#FAF3E5] border border-[#E0D0C0] rounded-2xl p-4 shadow-sm flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="w-14 h-14 bg-[#FFDEE9] border-2 border-[#FFB6C1] rounded-2xl flex items-center justify-center p-2 shadow-sm">
@@ -638,7 +705,6 @@
             </span>
           </div>
 
-          <!-- Month Selector -->
           <div class="flex items-center justify-between bg-white px-4 py-2.5 rounded-xl border border-[#E2D5C3] text-sm font-bold text-[#4A3B32]">
             <button id="btn-prev-month-meal" class="p-1 hover:bg-[#FAF3E5] rounded-lg transition-colors flex items-center gap-1 text-xs">
               <i data-lucide="chevron-left" class="w-4 h-4"></i> 이전 달
@@ -810,11 +876,10 @@
           </div>
 
           <div class="bg-[#F8EFE0] border border-[#E0D0C0] rounded-3xl p-6 text-center space-y-4 relative overflow-hidden shadow-sm min-h-[340px]">
-            <div class="absolute top-3 left-3 bg-white/80 backdrop-blur-sm text-[#5C4535] px-2.5 py-1 rounded-full text-xs font-bold border border-[#E8D8C8]">
+            <div class="absolute top-3 left-3 bg-white/85 backdrop-blur-sm text-[#5C4535] px-2.5 py-1 rounded-full text-xs font-bold border border-[#E8D8C8]">
               남은 스낵: 🍎 ${state.pigState.snackCount}개
             </div>
 
-            <!-- Floating Effect Overlay -->
             <div id="pig-effect-area" class="absolute inset-0 pointer-events-none z-30 flex items-center justify-center ${state.showEffect ? '' : 'hidden'}">
               ${state.effectType === 'hearts' ? `
                 <div class="animate-float-1 text-4xl absolute top-10 left-12">💖</div>
@@ -910,6 +975,28 @@
     }
 
     function attachTabEvents() {
+      // Sound Toggle Button
+      const soundToggleBtn = document.getElementById('btn-sound-toggle');
+      const soundIcon = document.getElementById('sound-icon');
+      if (soundToggleBtn) {
+        soundToggleBtn.addEventListener('click', () => {
+          soundEnabled = !soundEnabled;
+          if (soundEnabled) {
+            soundToggleBtn.classList.remove('bg-[#D87A56]', 'text-white');
+            soundToggleBtn.classList.add('bg-[#F5E6D3]', 'text-[#5C3A21]');
+            if (soundIcon) soundIcon.setAttribute('data-lucide', 'volume-2');
+            showToast('🔊 효과음이 켜졌습니다.');
+          } else {
+            soundToggleBtn.classList.remove('bg-[#F5E6D3]', 'text-[#5C3A21]');
+            soundToggleBtn.classList.add('bg-[#D87A56]', 'text-white');
+            if (soundIcon) soundIcon.setAttribute('data-lucide', 'volume-x');
+            showToast('🔇 효과음이 꺼졌습니다.');
+          }
+          lucide.createIcons();
+          playSound('click');
+        });
+      }
+
       // Home Tab Events
       const btnCheckin = document.getElementById('btn-checkin');
       if (btnCheckin) {
@@ -918,34 +1005,44 @@
           state.hasCheckedIn = true;
           state.pigState.snackCount += 2;
           state.pigState.quote = '출석 보상으로 맛있는 스낵 2개를 받았단다! 꿀꿀!';
+          playSound('checkin');
           showToast('🎁 출석 완료! 스낵 2개가 추가되었습니다.');
           renderTab();
         });
       }
 
       const btnGoMeals = document.getElementById('btn-go-meals');
-      if (btnGoMeals) btnGoMeals.addEventListener('click', () => switchTab('meals'));
+      if (btnGoMeals) {
+        btnGoMeals.addEventListener('click', () => {
+          playSound('click');
+          switchTab('meals');
+        });
+      }
 
       const btnGoPig = document.getElementById('btn-go-pig');
-      if (btnGoPig) btnGoPig.addEventListener('click', () => switchTab('pig'));
+      if (btnGoPig) {
+        btnGoPig.addEventListener('click', () => {
+          playSound('click');
+          switchTab('pig');
+        });
+      }
 
-      // Meal Month Navigation
       const btnPrevMeal = document.getElementById('btn-prev-month-meal');
       const btnNextMeal = document.getElementById('btn-next-month-meal');
-      if (btnPrevMeal) btnPrevMeal.addEventListener('click', () => changeMonth(-1));
-      if (btnNextMeal) btnNextMeal.addEventListener('click', () => changeMonth(1));
+      if (btnPrevMeal) btnPrevMeal.addEventListener('click', () => { playSound('click'); changeMonth(-1); });
+      if (btnNextMeal) btnNextMeal.addEventListener('click', () => { playSound('click'); changeMonth(1); });
 
-      // Calendar Month Navigation
       const btnPrevCal = document.getElementById('btn-prev-month-cal');
       const btnNextCal = document.getElementById('btn-next-month-cal');
-      if (btnPrevCal) btnPrevCal.addEventListener('click', () => changeMonth(-1));
-      if (btnNextCal) btnNextCal.addEventListener('click', () => changeMonth(1));
+      if (btnPrevCal) btnPrevCal.addEventListener('click', () => { playSound('click'); changeMonth(-1); });
+      if (btnNextCal) btnNextCal.addEventListener('click', () => { playSound('click'); changeMonth(1); });
 
-      // Pig Events: FEEDING (Heart Eyes & Floating Hearts)
+      // Pig Feed Event
       const btnFeed = document.getElementById('btn-feed-pig');
       if (btnFeed) {
         btnFeed.addEventListener('click', () => {
           if (state.pigState.snackCount <= 0) {
+            playSound('click');
             showToast('🍎 스낵이 부족합니다! 출석체크나 할머니와 수다를 떨어보세요!');
             return;
           }
@@ -963,6 +1060,7 @@
             state.pigState.quote = '꿀꿀! 맛있는 먹이를 냠냠 먹고 눈에서 하트가 뿅뿅~❤️!';
           }
 
+          playSound('feed');
           state.showEffect = true;
           state.effectType = 'hearts';
           state.pigExpression = 'heart';
@@ -976,13 +1074,14 @@
         });
       }
 
-      // Pig Events: PETTING (Star Eyes & Floating Stars)
+      // Pig Pet Event
       const btnPet = document.getElementById('btn-pet-pig');
       if (btnPet) {
         btnPet.addEventListener('click', () => {
           state.pigState.happiness = Math.min(100, state.pigState.happiness + 15);
           state.pigState.quote = '쓰다듬어주니 신나서 눈이 반짝반짝 별이 떴단다! ⭐✨';
           
+          playSound('pet');
           state.showEffect = true;
           state.effectType = 'stars';
           state.pigExpression = 'star';
@@ -1004,6 +1103,7 @@
           const val = chatInput.value.trim();
           if (!val || state.isChatTyping) return;
 
+          playSound('send');
           state.chatMessages.push({ id: Date.now(), sender: 'user', text: val });
           chatInput.value = '';
           state.isChatTyping = true;
@@ -1040,7 +1140,6 @@
       const apiKey = state.geminiApiKey.trim();
       const todayMeal = state.meals.find(m => m.date === todayStr);
 
-      // Meal Summary Text
       let mealInfoText = todayMeal 
         ? `오늘 급식(${todayMeal.date}): ${todayMeal.items.join(', ')} (${todayMeal.calories})` 
         : '오늘 급식: 정보 없음';
@@ -1049,7 +1148,6 @@
         ? state.meals.slice(0, 5).map(m => `[${m.date}(${m.day})]: ${m.items.slice(0, 4).join(', ')}`).join('\n')
         : '이번 달 급식 정보 없음';
 
-      // Schedule Summary Text
       const eventsText = state.events.length > 0
         ? state.events.map(e => `[${e.date}]: ${e.title} (${e.type})`).join('\n')
         : '이번 달 학사일정 정보 없음';
@@ -1072,7 +1170,7 @@ ${eventsText}
 
       if (apiKey) {
         try {
-          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+          const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
           const payload = {
             contents: [{ parts: [{ text: userMsg }] }],
             systemInstruction: { parts: [{ text: systemPrompt }] }
@@ -1091,7 +1189,6 @@ ${eventsText}
         }
       }
 
-      // Smart Fallback Handling for Meals & Schedule Questions
       if (!replyText) {
         await new Promise(res => setTimeout(res, 800));
         const lower = userMsg.toLowerCase();
@@ -1122,6 +1219,7 @@ ${eventsText}
 
       if (Math.random() > 0.4) {
         state.pigState.snackCount++;
+        playSound('coin');
         showToast('🍎 할머니와 대화하여 스낵 1개를 선물받았습니다!');
       }
 
@@ -1173,7 +1271,6 @@ ${eventsText}
         }
       };
 
-      // Populate Office Select
       const officeSelect = document.getElementById('office-select');
       if (officeSelect) {
         officeSelect.innerHTML = EDUCATION_OFFICES.map(o => `
@@ -1181,18 +1278,20 @@ ${eventsText}
         `).join('');
       }
 
-      // Open / Close Modals
       const modalSchool = document.getElementById('modal-school');
       const modalApi = document.getElementById('modal-api');
 
       document.getElementById('btn-open-school')?.addEventListener('click', () => {
+        playSound('click');
         modalSchool.classList.remove('hidden');
       });
       document.getElementById('btn-close-school')?.addEventListener('click', () => {
+        playSound('click');
         modalSchool.classList.add('hidden');
       });
 
       document.getElementById('btn-open-api')?.addEventListener('click', () => {
+        playSound('click');
         const neisKeyInput = document.getElementById('neis-key-input');
         const geminiKeyInput = document.getElementById('gemini-key-input');
         if (neisKeyInput) neisKeyInput.value = state.neisApiKey;
@@ -1200,10 +1299,12 @@ ${eventsText}
         modalApi.classList.remove('hidden');
       });
       document.getElementById('btn-close-api')?.addEventListener('click', () => {
+        playSound('click');
         modalApi.classList.add('hidden');
       });
 
       document.getElementById('btn-save-api')?.addEventListener('click', () => {
+        playSound('coin');
         const neisKeyInput = document.getElementById('neis-key-input');
         const geminiKeyInput = document.getElementById('gemini-key-input');
         if (neisKeyInput) {
@@ -1219,12 +1320,12 @@ ${eventsText}
         fetchSchoolData(state.selectedSchool, state.currentYearMonth);
       });
 
-      // School Search Execution
       const btnSearchSchool = document.getElementById('btn-search-school');
       const schoolQueryInput = document.getElementById('school-query-input');
       const schoolResultsContainer = document.getElementById('school-search-results');
 
       const executeSchoolSearch = async () => {
+        playSound('click');
         const query = schoolQueryInput.value.trim();
         if (!query) return;
 
@@ -1273,6 +1374,7 @@ ${eventsText}
 
         document.querySelectorAll('.btn-select-school').forEach((btn) => {
           btn.addEventListener('click', () => {
+            playSound('click');
             const idx = parseInt(btn.dataset.index);
             const chosen = results[idx];
             state.selectedSchool = chosen;
@@ -1294,14 +1396,13 @@ ${eventsText}
         });
       }
 
-      // Nav Tab Bar Listeners
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
+          playSound('click');
           switchTab(btn.dataset.tab);
         });
       });
 
-      // Initial Fetch & Render
       updateHeaderBadge();
       fetchSchoolData(state.selectedSchool, state.currentYearMonth);
     });
