@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>할머니네 집 - 급식과 픽셀 펫 복돈이</title>
   
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- Google Fonts: Noto Sans KR -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
   <style>
     body {
@@ -97,7 +97,6 @@
 
   <div class="w-full max-w-md bg-[#FDF8EE] min-h-screen shadow-2xl relative flex flex-col justify-between border-x border-[#EADBC8] overflow-hidden">
     
-    <!-- HEADER -->
     <header class="bg-[#FAF0E6] p-4 border-b border-[#E8D8C8] sticky top-0 z-20 flex items-center justify-between shadow-sm">
       <div class="flex items-center space-x-2.5">
         <div class="w-10 h-10 rounded-full bg-[#D87A56] flex items-center justify-center p-1 shadow-inner border-2 border-[#FFF0E0]">
@@ -152,12 +151,9 @@
       </div>
     </header>
 
-    <!-- MAIN VIEW AREA -->
     <main id="main-content" class="flex-1 overflow-y-auto pb-24 p-4 space-y-5">
-      <!-- Dynamic Tab Views Rendered via JS -->
-    </main>
+      </main>
 
-    <!-- BOTTOM NAVIGATION -->
     <nav class="bg-[#FAF0E6] border-t border-[#E8D8C8] fixed bottom-0 left-0 right-0 max-w-md mx-auto z-20 px-2 py-2 flex justify-around shadow-lg">
       <button data-tab="home" class="nav-btn flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all text-[#D87A56] font-bold bg-[#F3E2D0]">
         <i data-lucide="home" class="w-5 h-5"></i>
@@ -179,9 +175,12 @@
         <i data-lucide="message-circle" class="w-5 h-5"></i>
         <span class="text-[10px] mt-0.5">수다</span>
       </button>
+      <button data-tab="board" class="nav-btn flex flex-col items-center justify-center px-3 py-1.5 rounded-xl transition-all text-[#8C7462] hover:text-[#5C4535]">
+        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
+        <span class="text-[10px] mt-0.5">게시판</span>
+      </button>
     </nav>
 
-    <!-- MODAL: SCHOOL SEARCH -->
     <div id="modal-school" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-fadeIn">
       <div class="bg-[#FAF5ED] border border-[#E0D0C0] rounded-3xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative">
         <button id="btn-close-school" class="absolute top-4 right-4 text-[#8C6A50] hover:text-[#4A3B32] p-1 rounded-full bg-white/50">
@@ -215,7 +214,6 @@
       </div>
     </div>
 
-    <!-- MODAL: CLOSET (복돈이 드레스룸 꾸미기) -->
     <div id="modal-closet" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-fadeIn">
       <div class="bg-[#FFFDF9] border-2 border-[#C8A268] rounded-3xl w-full max-w-sm p-4 space-y-3 shadow-2xl relative max-h-[90vh] flex flex-col">
         <div class="flex justify-between items-center border-b border-[#EADBC8] pb-2">
@@ -227,17 +225,14 @@
           </button>
         </div>
 
-        <!-- 드레스룸 프리뷰 쇼케이스 -->
         <div class="bg-[#F8EED8] border-2 border-[#D8A268] rounded-2xl p-3 flex flex-col items-center justify-center relative shadow-inner">
           <span class="text-[10px] text-[#8C6A50] bg-white/80 px-2.5 py-0.5 rounded-full font-bold mb-1">
             현재 착장 모습
           </span>
           <div id="closet-preview-pig" class="w-28 h-28 flex items-center justify-center">
-            <!-- Dynamic Preview Pig SVG -->
-          </div>
+            </div>
         </div>
 
-        <!-- 카테고리 탭 -->
         <div class="flex border-b border-[#E0D0C0] gap-1 pt-1">
           <button data-closet-tab="hat" class="closet-tab-btn flex-1 py-1.5 text-center text-xs font-bold rounded-t-lg bg-[#D87A56] text-white">
             👒 모자
@@ -253,12 +248,9 @@
           </button>
         </div>
 
-        <!-- 아이템 그리드 (각 10종) -->
         <div id="closet-items-grid" class="flex-1 overflow-y-auto grid grid-cols-2 gap-2 p-1 min-h-[160px]">
-          <!-- JS dynamic generation -->
-        </div>
+          </div>
 
-        <!-- 하단 초기화 및 저장 버튼 -->
         <div class="pt-2 border-t border-[#EADBC8] flex gap-2">
           <button id="btn-reset-closet" class="flex-1 bg-[#E2D5C3] hover:bg-[#D5C6B2] text-[#5C3A21] py-2 rounded-xl text-xs font-bold transition-all active:scale-95">
             처음으로 (초기화)
@@ -270,7 +262,6 @@
       </div>
     </div>
 
-    <!-- MODAL: API & SETTINGS -->
     <div id="modal-api" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden animate-fadeIn">
       <div class="bg-[#FAF5ED] border border-[#E0D0C0] rounded-3xl w-full max-w-sm p-5 space-y-4 shadow-2xl relative">
         <button id="btn-close-api" class="absolute top-4 right-4 text-[#8C6A50] hover:text-[#4A3B32] p-1 rounded-full bg-white/50">
@@ -311,12 +302,23 @@
       </div>
     </div>
 
-    <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toast-container" class="fixed top-5 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center gap-2 w-full max-w-xs px-4"></div>
 
   </div>
 
   <script>
+    // ===== Firebase 초기화 =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyAPrvmE40QDNsoB562BI8aFe82nm3WqiAk",
+      authDomain: "school-info55.firebaseapp.com",
+      projectId: "school-info55",
+      storageBucket: "school-info55.firebasestorage.app",
+      messagingSenderId: "445658489138",
+      appId: "1:445658489138:web:0d83e094ab37c7eb0ab72b"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     const EDUCATION_OFFICES = [
       { code: '', name: '전체 (전국 학교)' },
       { code: 'B10', name: '서울특별시교육청' },
@@ -346,7 +348,6 @@
       'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=600&q=80'
     ];
 
-    // 복돈이 꾸미기 액세서리 데이터 (각 10종씩)
     const ACCESSORIES = {
       hat: [
         { id: 'hat_straw', name: '밀짚모자', icon: '👒' },
@@ -454,15 +455,14 @@
       pigClickCount: 0,
       pigClickTimer: null,
       isFarting: false,
+      feedbacks: [], // 게시판 데이터 상태 추가
       
-      // 저장된 착장 아이템
       equippedItems: JSON.parse(localStorage.getItem('pig_equipped') || JSON.stringify({
         hat: null,
         necklace: null,
         pin: null,
         face: null
       })),
-      // 드레스룸 모달 임시 착장
       tempEquippedItems: { hat: null, necklace: null, pin: null, face: null },
 
       pigState: {
@@ -526,7 +526,6 @@
           <rect x="9" y="6" width="3" height="1" fill="#E11D48" />
         `;
       } else if (expression === 'dance') {
-        // 춤출 때 번쩍이지 않는 신나는 ^ ^ 웃는 눈 표정
         eyeLeft = `
           <rect x="3" y="6" width="1" height="1" fill="#1E293B" />
           <rect x="4" y="5" width="1" height="1" fill="#1E293B" />
@@ -558,14 +557,12 @@
         eyeLeft = `<rect x="3" y="6" width="3" height="1" fill="#1E293B" />`;
         eyeRight = `<rect x="10" y="6" width="3" height="1" fill="#1E293B" />`;
       } else if (expression === 'kiss') {
-        // 뽀뽀하는 '3' 입 모양
         mouth = `
           <rect x="7" y="8" width="2" height="1" fill="#E11D48" />
           <rect x="8" y="9" width="1" height="1" fill="#E11D48" />
           <rect x="7" y="10" width="2" height="1" fill="#E11D48" />
         `;
       } else if (expression === 'belly') {
-        // 애교부릴 때 (배 뒤집기 + 뽀뽀하는 '3' 입 모양)
         legsAndBelly = `
           <rect x="3" y="13" width="2" height="2" fill="#F472B6" />
           <rect x="11" y="13" width="2" height="2" fill="#F472B6" />
@@ -588,7 +585,6 @@
         `;
       }
 
-      // 액세서리 그래픽 layer
       let hatGraphic = '';
       if (items.hat === 'hat_straw') hatGraphic = `<polygon points="1,2 15,2 13,0 3,0" fill="#EAB308" /><rect x="3" y="1" width="10" height="1" fill="#CA8A04" />`;
       else if (items.hat === 'hat_party') hatGraphic = `<polygon points="8,0 4,3 12,3" fill="#EC4899" /><circle cx="8" cy="0" r="0.8" fill="#FDE047" />`;
@@ -639,16 +635,13 @@
 
       return `
         <svg viewBox="0 0 16 16" class="${className} pixel-crisp drop-shadow-md">
-          <!-- 귀 -->
           <rect x="2" y="1" width="3" height="3" fill="#F472B6" />
           <rect x="3" y="2" width="1" height="1" fill="#F43F5E" />
           <rect x="11" y="1" width="3" height="3" fill="#F472B6" />
           <rect x="12" y="2" width="1" height="1" fill="#F43F5E" />
-          <!-- 몸통 -->
           <rect x="2" y="3" width="12" height="10" fill="#FBCFE8" />
           <rect x="1" y="4" width="14" height="8" fill="#FBCFE8" />
           <rect x="3" y="2" width="10" height="12" fill="#FBCFE8" />
-          <!-- 이목구비 -->
           ${blushBg}
           ${eyeLeft}
           ${eyeRight}
@@ -657,7 +650,6 @@
           ${legsAndBelly}
           ${holdingApple ? `<rect x="7" y="10" width="2" height="2" fill="#EF4444" />` : ''}
           
-          <!-- 악세서리 오버레이 레이어 -->
           ${faceGraphic}
           ${neckGraphic}
           ${pinGraphic}
@@ -901,7 +893,6 @@
             `}
           </div>
 
-          <!-- 홈 탭 복돈이 미니 상태 카드 -->
           <div class="bg-[#FAF3E5] border border-[#E0D0C0] rounded-2xl p-4 shadow-sm flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="w-16 h-16 bg-[#FFE4D6] border border-[#D87A56] rounded-2xl flex items-center justify-center p-1 shadow-sm">
@@ -1076,23 +1067,19 @@
             </div>
           </div>
 
-          <!-- 복돈이 방 (가구 없는 깔끔하고 따뜻한 시골 방 배경) -->
           <div class="bg-[#F8EED8] border-4 border-[#D8A268] rounded-3xl p-4 text-center space-y-4 relative overflow-hidden shadow-inner min-h-[440px] flex flex-col justify-between" style="background-image: linear-gradient(180deg, #FDF7E7 0%, #F5E5C0 75%, #EAD8AE 100%);">
             
-            <!-- 방 상단 잔여 스낵 & 복돈이 방 옷장 버튼 -->
             <div class="flex justify-between items-center z-10">
               <span id="pig-snack-badge" class="bg-white/90 backdrop-blur-sm text-[#5C3A21] px-3 py-1.5 rounded-full text-xs font-bold border border-[#D8A268] shadow-sm">
                 남은 스낵: 🍎 ${state.pigState.snackCount}개
               </span>
               
-              <!-- 복돈이 방 내부에 배치된 옷장(드레스룸) 버튼 -->
               <button id="btn-open-closet" class="bg-[#D87A56] hover:bg-[#C26946] text-white px-3.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-md active:scale-95 flex items-center gap-1.5 border border-[#FFE4D6]">
                 <span class="text-sm">👕</span>
                 <span>복돈이 옷장</span>
               </button>
             </div>
 
-            <!-- 하트/별/음표/zzz/방귀 이펙트 영역 -->
             <div id="pig-effect-area" class="absolute inset-0 pointer-events-none z-30 flex items-center justify-center ${state.showEffect ? '' : 'hidden'}">
               ${state.effectType === 'fart' ? `
                 <div class="animate-float-1 text-5xl absolute bottom-24 right-12">💨</div>
@@ -1118,14 +1105,12 @@
               `}
             </div>
 
-            <!-- 말풍선 및 오리지널 픽셀 복돈이 캐릭터 -->
             <div class="flex flex-col items-center justify-center my-auto relative z-20">
               <div id="pig-speech-bubble" class="bg-white border-2 border-[#D87A56] text-[#4A3B32] text-xs font-bold px-4 py-2 rounded-2xl shadow-md mb-3 max-w-[260px] relative animate-fadeIn transition-all">
                 "<span id="pig-speech-text">${state.pigSpeech}</span>"
                 <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-b-2 border-r-2 border-[#D87A56] rotate-45"></div>
               </div>
 
-              <!-- 터치 가능 복돈이 메인 캐릭터 -->
               <div id="btn-click-pig" class="cursor-pointer transition-transform hover:scale-110 active:scale-95 p-2 relative group">
                 <div class="flex flex-col items-center" id="pig-svg-container">
                   ${getPixelPigSvg(state.pigExpression, state.pigHoldingApple, "w-36 h-36")}
@@ -1136,7 +1121,6 @@
               </div>
             </div>
 
-            <!-- 하단 인터랙션 버튼 5종 -->
             <div class="grid grid-cols-3 gap-2 pt-2 z-10">
               <button id="btn-feed-pig" class="bg-[#D87A56] hover:bg-[#C26946] text-white py-2.5 px-2 rounded-2xl font-bold text-xs shadow transition-all active:scale-95 flex items-center justify-center gap-1">
                 🍎 먹이주기
@@ -1216,6 +1200,55 @@
       `;
     }
 
+    // ===== 새롭게 추가된 게시판 렌더링 함수 =====
+    function renderBoardMessages() {
+      const container = document.getElementById('board-messages-container');
+      if (!container) return;
+      
+      if (state.feedbacks.length === 0) {
+        container.innerHTML = '<div class="text-center py-6 text-xs text-[#8C7462]">등록된 의견이 없습니다. 첫 의견을 남겨주세요!</div>';
+        return;
+      }
+      
+      container.innerHTML = state.feedbacks.map(f => {
+        const dateStr = f.createdAt ? new Date(f.createdAt.toMillis()).toLocaleString() : '방금 전';
+        return `
+          <div class="bg-white p-3 rounded-2xl border border-[#E0D0C0] shadow-sm animate-fadeIn">
+            <p class="text-xs text-[#4A3B32]">${f.text}</p>
+            <p class="text-[10px] text-[#8C6A50] mt-1.5 text-right font-medium">${dateStr}</p>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderBoardTab() {
+      setTimeout(renderBoardMessages, 0); // DOM이 그려진 후 메시지 삽입
+      return `
+        <div class="flex flex-col h-[72vh] animate-fadeIn">
+          <div class="bg-[#FAF0E6] p-3 rounded-2xl border border-[#E8D8C8] flex items-center justify-between mb-3">
+            <div>
+              <h2 class="font-bold text-sm text-[#4A3B32]">사용자 의견 게시판</h2>
+              <p class="text-[11px] text-[#8C6A50]">앱에 대한 소중한 의견을 남겨주세요!</p>
+            </div>
+            <span class="text-[10px] bg-[#D87A56] text-white px-2 py-0.5 rounded font-bold">
+              Firestore 연동
+            </span>
+          </div>
+
+          <div id="board-messages-container" class="flex-1 overflow-y-auto space-y-3 p-3 bg-[#FAF5ED] rounded-2xl border border-[#E8DCD0] mb-3">
+            <div class="text-center py-6 text-xs text-[#8C7462]">의견을 불러오는 중입니다...</div>
+          </div>
+
+          <div class="flex gap-2">
+            <input type="text" id="board-input-text" placeholder="여기에 소중한 의견을 작성해주세요..." class="flex-1 bg-white border border-[#D0B8A0] rounded-xl px-3.5 py-2.5 text-xs text-[#4A3B32] focus:outline-none focus:border-[#D87A56] shadow-inner">
+            <button id="btn-submit-board" class="bg-[#D87A56] hover:bg-[#C26946] text-white px-4 rounded-xl font-bold text-xs flex items-center justify-center transition-all active:scale-95 shadow shrink-0">
+              등록
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
     function updatePigUI() {
       const speechText = document.getElementById('pig-speech-text');
       if (speechText) speechText.textContent = state.pigSpeech;
@@ -1282,7 +1315,6 @@
       const preview = document.getElementById('closet-preview-pig');
       if (!grid || !preview) return;
 
-      // 드레스룸 미리보기 돼지
       preview.innerHTML = getPixelPigSvg('normal', false, 'w-24 h-24', state.tempEquippedItems);
 
       const itemsList = ACCESSORIES[state.activeClosetTab] || [];
@@ -1300,7 +1332,6 @@
         `;
       }).join('');
 
-      // 아이템 토글 클릭 이벤트
       document.querySelectorAll('.btn-closet-item').forEach(btn => {
         btn.addEventListener('click', () => {
           const itemId = btn.dataset.itemId;
@@ -1343,7 +1374,6 @@
       if (btnPrevCal) btnPrevCal.addEventListener('click', () => { changeMonth(-1); });
       if (btnNextCal) btnNextCal.addEventListener('click', () => { changeMonth(1); });
 
-      // 👕 옷장 모달 열기 이벤트
       const btnOpenCloset = document.getElementById('btn-open-closet');
       const modalCloset = document.getElementById('modal-closet');
       if (btnOpenCloset && modalCloset) {
@@ -1354,7 +1384,6 @@
         });
       }
 
-      // 복돈이 직접 연속 4번 터치 -> 방귀 및 부끄러워함 이벤트
       const btnClickPig = document.getElementById('btn-click-pig');
       if (btnClickPig) {
         btnClickPig.addEventListener('click', () => {
@@ -1362,7 +1391,6 @@
 
           if (state.pigClickTimer) clearTimeout(state.pigClickTimer);
 
-          // 1.5초 내 연속 4번 클릭 시 방귀 발생
           if (state.pigClickCount >= 4) {
             state.pigClickCount = 0;
             state.isFarting = true;
@@ -1411,7 +1439,6 @@
         });
       }
 
-      // 먹이주기 버튼
       const btnFeed = document.getElementById('btn-feed-pig');
       if (btnFeed) {
         btnFeed.addEventListener('click', () => {
@@ -1456,7 +1483,6 @@
         });
       }
 
-      // 쓰다듬기 버튼
       const btnPet = document.getElementById('btn-pet-pig');
       if (btnPet) {
         btnPet.addEventListener('click', () => {
@@ -1483,7 +1509,6 @@
         });
       }
 
-      // 춤추기 버튼 (눈 번쩍임 제거 및 신나는 ^ ^ 표정 적용)
       const btnDance = document.getElementById('btn-dance-pig');
       if (btnDance) {
         btnDance.addEventListener('click', () => {
@@ -1509,7 +1534,6 @@
         });
       }
 
-      // 낮잠자기 버튼
       const btnSleep = document.getElementById('btn-sleep-pig');
       if (btnSleep) {
         btnSleep.addEventListener('click', () => {
@@ -1529,7 +1553,6 @@
         });
       }
 
-      // 애교부리기 버튼 (귀여운 3 모양 뽀뽀 입술 표정 적용)
       const btnAegyo = document.getElementById('btn-aegyo-pig');
       if (btnAegyo) {
         btnAegyo.addEventListener('click', () => {
@@ -1555,7 +1578,6 @@
         });
       }
 
-      // 수다방 AI 전송
       const btnSendChat = document.getElementById('btn-send-chat');
       const chatInput = document.getElementById('chat-input-text');
       if (btnSendChat && chatInput) {
@@ -1568,7 +1590,6 @@
           state.isChatTyping = true;
           renderTab();
 
-          // 모의 / Gemini AI 응답 생성
           setTimeout(() => {
             let responseText = '아이고 그래~ 밥 든든하게 먹고 항상 건장하게 지내려무나!';
             if (text.includes('급식') || text.includes('밥')) {
@@ -1590,6 +1611,38 @@
           if (e.key === 'Enter') handleSend();
         });
       }
+
+      // ===== 게시판 등록 이벤트 (Firestore 쓰기) =====
+      const btnSubmitBoard = document.getElementById('btn-submit-board');
+      const boardInput = document.getElementById('board-input-text');
+      if (btnSubmitBoard && boardInput) {
+        const handleSubmitBoard = () => {
+          const text = boardInput.value.trim();
+          if (!text) {
+            showToast('의견을 입력해주세요.');
+            return;
+          }
+          btnSubmitBoard.disabled = true;
+          
+          db.collection("feedbacks").add({
+            text: text,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          }).then(() => {
+            boardInput.value = '';
+            showToast('의견이 성공적으로 등록되었습니다.');
+            btnSubmitBoard.disabled = false;
+          }).catch((error) => {
+            console.error("의견 등록 오류:", error);
+            showToast('의견 등록에 실패했습니다.');
+            btnSubmitBoard.disabled = false;
+          });
+        };
+
+        btnSubmitBoard.addEventListener('click', handleSubmitBoard);
+        boardInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') handleSubmitBoard();
+        });
+      }
     }
 
     function renderTab() {
@@ -1601,6 +1654,7 @@
       else if (state.activeTab === 'calendar') mainContent.innerHTML = renderCalendarTab();
       else if (state.activeTab === 'pig') mainContent.innerHTML = renderPigTab();
       else if (state.activeTab === 'chat') mainContent.innerHTML = renderChatTab();
+      else if (state.activeTab === 'board') mainContent.innerHTML = renderBoardTab();
 
       lucide.createIcons();
       attachTabEvents();
@@ -1630,6 +1684,22 @@
     }
 
     window.onload = function () {
+      // ===== 게시판 데이터 실시간 조회 (Firestore 읽기) =====
+      db.collection("feedbacks").orderBy("createdAt", "desc").onSnapshot((snapshot) => {
+        const newFeedbacks = [];
+        snapshot.forEach(doc => {
+          newFeedbacks.push({ id: doc.id, ...doc.data() });
+        });
+        state.feedbacks = newFeedbacks;
+        
+        // 현재 활성 탭이 게시판이라면 메시지 영역만 리렌더링
+        if (state.activeTab === 'board') {
+          renderBoardMessages();
+        }
+      }, (error) => {
+        console.error("게시판 불러오기 오류:", error);
+      });
+
       // 탭 전환 네비게이션 이벤트
       document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -1637,11 +1707,9 @@
         });
       });
 
-      // 헤더 학교 이름 뱃지 업데이트
       const schoolBadge = document.getElementById('header-school-badge');
       if (schoolBadge) schoolBadge.textContent = state.selectedSchool.name;
 
-      // 관할 교육청 드롭다운 생성
       const officeSelect = document.getElementById('office-select');
       if (officeSelect) {
         officeSelect.innerHTML = EDUCATION_OFFICES.map(o => `
@@ -1649,7 +1717,6 @@
         `).join('');
       }
 
-      // 모달 닫기 / 열기 핸들러들
       const modalSchool = document.getElementById('modal-school');
       document.getElementById('btn-open-school')?.addEventListener('click', () => modalSchool?.classList.remove('hidden'));
       document.getElementById('btn-close-school')?.addEventListener('click', () => modalSchool?.classList.add('hidden'));
@@ -1661,7 +1728,6 @@
       const modalCloset = document.getElementById('modal-closet');
       document.getElementById('btn-close-closet')?.addEventListener('click', () => modalCloset?.classList.add('hidden'));
 
-      // 옷장 카테고리 탭 변경
       document.querySelectorAll('.closet-tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           state.activeClosetTab = btn.dataset.closetTab;
@@ -1675,7 +1741,6 @@
         });
       });
 
-      // 옷장 저장 & 초기화
       document.getElementById('btn-reset-closet')?.addEventListener('click', () => {
         state.tempEquippedItems = { hat: null, necklace: null, pin: null, face: null };
         renderClosetItemsGrid();
@@ -1689,7 +1754,6 @@
         renderTab();
       });
 
-      // API 설정 저장
       document.getElementById('btn-save-api')?.addEventListener('click', () => {
         const neisKey = document.getElementById('neis-key-input')?.value.trim() || '';
         const geminiKey = document.getElementById('gemini-key-input')?.value.trim() || '';
@@ -1704,7 +1768,6 @@
         fetchSchoolData(state.selectedSchool, state.currentYearMonth);
       });
 
-      // 학교 검색
       document.getElementById('btn-search-school')?.addEventListener('click', async () => {
         const query = document.getElementById('school-query-input')?.value.trim();
         const officeCode = document.getElementById('office-select')?.value || '';
@@ -1769,7 +1832,6 @@
         }
       });
 
-      // 초기데이터 로드 및 첫 화면 렌더링
       fetchSchoolData(state.selectedSchool, state.currentYearMonth);
     };
   </script>
